@@ -18,7 +18,7 @@ use think\Model;
 
 class Confession extends Model
 {
-    const COUNT_OF_PAGE = 20;
+    private const COUNT_OF_PAGE = 20;
 
     /**
      * 表白墙文章列表
@@ -153,6 +153,8 @@ class Confession extends Model
             } catch (ModelNotFoundException $e) {
             } catch (DbException $e) {
             }
+            return ['status' => 400,
+                'msg' => "查询失败"];
         }
         return $Comment;
     }
