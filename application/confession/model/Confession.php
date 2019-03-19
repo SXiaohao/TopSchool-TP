@@ -81,7 +81,7 @@ class Confession extends Model
 
             if (count($Comment) > 0) {
                 $Comment = $this->foreachReply($Comment);
-                return ['ArticleContent' => array_to_object($ArticleContent,"article"),//改成对象
+                return ['ArticleContent' => array_to_object($ArticleContent),//改成对象
                     'comment_list'=>$Comment,
                     'other' => '查看全部评论 ',
                     'status' => 200,
