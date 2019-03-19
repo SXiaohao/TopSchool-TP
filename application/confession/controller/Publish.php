@@ -26,14 +26,13 @@ class Publish extends Controller
      */
     public function upload(Request $request)
     {
-        if ($request->isPost()){
-            $Upload=new ConfessionImage();
-            $files=$request->file('img');
-            $phone=$request->param('phone');
-            $content=$request->param('content');
-            $token=$request->param('token');
-            $Upload->uploadArticle($files,$content,$token,$phone);
-            var_dump($files);
+        if ($request->isPost()) {
+            $Upload = new ConfessionImage();
+            $files = $request->file('img');
+            $phone = $request->param('phone');
+            $content = $request->param('content');
+            $token = $request->param('token');
+            return $Upload->uploadArticle($files, $content, $token, $phone);
         }
         return [config('PARAMS_ERROR')];
 

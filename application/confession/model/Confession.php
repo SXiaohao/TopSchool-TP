@@ -9,7 +9,6 @@
 namespace app\confession\model;
 
 
-use app\utils\TimeUtils;
 use think\Db;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\ModelNotFoundException;
@@ -18,7 +17,7 @@ use think\Model;
 
 class Confession extends Model
 {
-    private const COUNT_OF_PAGE = 20;
+    const COUNT_OF_PAGE = 20;
 
     /**
      * 表白墙文章列表
@@ -32,7 +31,7 @@ class Confession extends Model
             $Confession = Db::field('ym_confession.*, ym_user.user_name,avatar,GROUP_CONCAT(image_path)AS images_list')
                 ->table(['ym_user', 'ym_confession', 'ym_confession_image'])
                 ->where('ym_confession.user_id=ym_user.user_id')
-                ->where('ym_confession.article_id=ym_confession_image.article_id')
+                ->where( 'ym_confession.article_id=ym_confession_image.article_id')
                 ->group('ym_confession.article_id')
                 ->order('ym_confession.release_time', 'DESC')
                 ->page($page, 20)
@@ -40,7 +39,7 @@ class Confession extends Model
 
             for ($i = 0; $i < count($Confession); $i++) {
                 $Confession[$i]["content"] = mb_strcut($Confession[$i]["content"], 0, 240) . '...';
-                $Confession[$i]["release_time"] = TimeUtils::uc_time_ago($Confession[$i]["release_time"]);
+                $Confession[$i]["release_time"] = uc_time_ago($Confession[$i]["release_time"]);
                 $Confession[$i]["images_list"] = explode(",", $Confession[$i]["images_list"]);
             }
             return ['cardsList' => $Confession,
@@ -71,7 +70,7 @@ class Confession extends Model
                 ->where('ym_confession.user_id = ym_user.user_id')
                 ->where('ym_confession_image.article_id =' . $article_id)
                 ->select();
-            $ArticleContent[0]["release_time"] = TimeUtils::uc_time_ago($ArticleContent[0]["release_time"]);
+            $ArticleContent[0]["release_time"] = uc_time_ago($ArticleContent[0]["release_time"]);
             $ArticleContent[0]["images_list"] = explode(",", $ArticleContent[0]["images_list"]);
             $Comment = Db::field('ym_confession_comment.* ,ym_user.user_name AS commentator_name,ym_user.avatar AS avatar')
                 ->table(['ym_confession_comment', 'ym_user'])
@@ -82,13 +81,14 @@ class Confession extends Model
 
             if (count($Comment) > 0) {
                 $Comment = $this->foreachReply($Comment);
-                $ArticleContent[0]["comment_list"] = $Comment;
-                return ['commentAndReplyList' => $ArticleContent,
+                return ['ArticleContent' => array_to_object($ArticleContent,"article"),//改成对象
+                    'comment_list'=>$Comment,
                     'other' => '查看全部评论 ',
                     'status' => 200,
                     'msg' => "成功"];
             }
-            return ['commentAndReplyList' => $ArticleContent,
+            return ['ArticleContent' => $ArticleContent,
+                'comment_list'=>[],
                 'other' => '暂无评论',
                 'status' => 200,
                 'msg' => "成功"];
@@ -129,6 +129,13 @@ class Confession extends Model
     }
 
 
+
+
+
+
+
+
+
     /**
      * 将回复填充进评论链表
      * @param $Comment '评论链表'
@@ -145,17 +152,18 @@ class Confession extends Model
                     ->where(' comment_id= ' . $Comment[$i]["comment_id"])
                     ->select();
                 for ($j = 0; $j < count($Reply); $j++) {
-                    $Reply[$j]["reply_time"] = TimeUtils::uc_time_ago($Reply[$j]["reply_time"]);
+                    $Reply[$j]["reply_time"] = uc_time_ago($Reply[$j]["reply_time"]);
                 }
-                $Comment[$i]["comment_time"] = TimeUtils::uc_time_ago($Comment[$i]["comment_time"]);
+                $Comment[$i]["comment_time"] = uc_time_ago($Comment[$i]["comment_time"]);
                 $Comment[$i]["reply_list"] = $Reply;
             } catch (DataNotFoundException $e) {
             } catch (ModelNotFoundException $e) {
             } catch (DbException $e) {
             }
-            return ['status' => 400,
-                'msg' => "查询失败"];
+
         }
         return $Comment;
+
     }
+
 }

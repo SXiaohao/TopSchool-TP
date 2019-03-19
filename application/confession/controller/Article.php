@@ -10,7 +10,6 @@ namespace app\confession\controller;
 
 
 use app\confession\model\Confession;
-use app\confession\model\ConfessionComment;
 use think\Controller;
 use think\Request;
 

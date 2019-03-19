@@ -17,11 +17,14 @@ return [
     'SUCCESS'=>['status'=>200, 'msg'=>"成功"],
     'NOT_LOGIN'=>['status'=>400, 'msg'=>"账号身份过期"],
     'SYS_ERROR'=>['status'=>401, 'msg'=>"服务器异常,请稍后再试"],
-    'PARAMS_ERROR'=>['status'=>403, 'msg'=>"参数错误"],
+    'PARAMS_ERROR'=>['status'=>409, 'msg'=>"非法请求"],
     'NOT_SUPPORTED'=>['status'=>410, 'msg'=>"不支持或已经废弃"],
     'TOO_FREQUENT'=>['status'=>445, 'msg'=>"太频繁的调用"],
     'UNKNOWN_ERROR'=>['status'=>499, 'msg'=>"未知错误"],
-
+    //token key
+    'token_key'             =>'top_school_no1',
+    //salt
+    'salt'                  =>'XBxYmkC46y7b8C5qN56z46y7b8C5qN56zsb8C5qN56z46y7b8C5qN56zs',
     // 应用名称
     'app_name'               => '',
     // 应用地址
@@ -64,7 +67,7 @@ return [
     // 默认模块名
     'default_module'         => 'index',
     // 禁止访问模块
-    'deny_module_list'       => ['common'],
+    'deny_module_list'       => [''],
     // 默认控制器名
     'default_controller'     => 'Index',
     // 默认操作名
