@@ -9,19 +9,40 @@
 // | Author: 流年 <liu21st@gmail.com>
 // +----------------------------------------------------------------------
 // 应用公共文件
-function getToken($phone){
+function getToken($phone)
+{
     $key = config('token_key');
     $token = [
-        "iss"=>"",  //签发者 可以为空
-        "aud"=>"", //面象的用户，可以为空
+        "iss" => "",  //签发者 可以为空
+        "aud" => "", //面象的用户，可以为空
         "iat" => time(), //签发时间
         "nbf" => time(), //在什么时候jwt开始生效
-        "exp" => time()+2592000, //token 过期时间 30天
+        "exp" => time() + 2592000, //token 过期时间 30天
         "phone" => $phone //记录的user手机号的信息，如果有其它信息，可以再添加数组的键值对
     ];
-    return Firebase\JWT\JWT::encode($token,$key,"HS256"); //根据参数生成了 token
+    return Firebase\JWT\JWT::encode($token, $key, "HS256"); //根据参数生成了 token
 }
-function sendSms($templateCode,$phone,$vCode){
+
+function checkToken($token, $phone)
+{
+
+    $jwtToken=\think\facade\Cache::get($phone);
+    if ($token!=$jwtToken) {
+        die("token与用户不符");
+    }
+    $key = config('token_key');//解密秘钥
+    $type = "HS256";//签名类型HS256
+    // JWT::$leeway = 10;//偏移时间
+    try {
+        $json = Firebase\JWT\JWT::decode($jwtToken, $key, array($type));//解密签名token
+        return $json;
+    } catch (\Exception $exception) {//如果解密失败，或者超过有效期则die
+        die("token已过期");
+    }
+}
+
+function sendSms($templateCode, $phone, $vCode)
+{
     $code = new stdClass;
     $code->code = $vCode;
     AlibabaCloud\Client\AlibabaCloud::accessKeyClient('LTAIEAmtRB6q3vxv', 's1qtBFkbR7ThINpKMsdXHc47LKYfMb')
@@ -43,9 +64,9 @@ function sendSms($templateCode,$phone,$vCode){
                 ],
             ])
             ->request();
-        if($result->toArray()["Message"] === 'ok'){
+        if ($result->toArray()["Message"] === 'ok') {
             return true;
-        }else{
+        } else {
             return $result->toArray()["Message"];
         }
     } catch (ClientException $e) {
@@ -54,12 +75,14 @@ function sendSms($templateCode,$phone,$vCode){
         return $e->getErrorMessage() . PHP_EOL;
     }
 }
+
 function passSalt($psw)
 {
-    $psw=md5($psw);
-    $psw=crypt($psw,config('salt'));
+    $psw = md5($psw);
+    $psw = crypt($psw, config('salt'));
     return $psw;
 }
+
 //时间格式化（时间戳）
 function uc_time_ago($ptime)
 {
@@ -85,7 +108,8 @@ function uc_time_ago($ptime)
  * @param object $obj 对象
  * @return array
  */
-function object_to_array($obj) {
+function object_to_array($obj)
+{
     $obj = (array)$obj;
     foreach ($obj as $k => $v) {
         if (gettype($v) == 'resource') {
@@ -97,13 +121,15 @@ function object_to_array($obj) {
     }
     return $obj;
 }
+
 /**
  * 数组 转 对象
  *
  * @param array $arr 数组
  * @return object
  */
-function array_to_object($arr) {
+function array_to_object($arr)
+{
     if (gettype($arr) != 'array') {
         return null;
     }

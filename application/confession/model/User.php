@@ -13,9 +13,6 @@ use think\Model;
 
 class User extends Model
 {
-    public function select(){
-        $User=new User();
-       return $User->where('user_id',3)->find();
-    }
+
 
 }

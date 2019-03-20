@@ -9,7 +9,6 @@
 namespace app\confession\model;
 
 
-use app\confession\controller\Publish;
 use think\Db;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\ModelNotFoundException;
@@ -33,33 +32,33 @@ class ConfessionImage extends Model
      */
     public function uploadArticle($files, $content, $token, $phone)
     {
-
+        //验证token
+        checkToken($token, $phone);
+        //通过手机号查询用户信息
         $User = Db::table('ym_user')->where('phone', $phone)->find();
-        /*if ($User[0]["token"] != $token) {
-            return ['status' => 400,
-                'msg' => '用户token不符合'];
-        }*/
+        //是否上传图片
         if ($files != null) {
-
             $article_id = Db::table('ym_confession')
                 ->insertGetId(['user_id' => $User["user_id"], 'content' => $content, 'release_time' => date('y-m-d h:i:s', time()), 'id' => $User["user_id"]]);
-            $imagePath = null;
-            $i = 0;
+            //上传图片并返回访问路径
             foreach ($files as $file) {
-                $info = $file->validate(['ext', 'jpg,png,gif'])->move('../public/static/images');
+                $info = $file->validate(['ext', 'jpg,jpeg,png,gif'])->move('../public/static/images');
                 if ($info) {
-                    $imagePath[$i] = ConfessionImage::LOCAL_PATH . '/static/images/' . $info->getSaveName();
+                    $imagePath = ConfessionImage::LOCAL_PATH . '/static/images/' . $info->getSaveName();
                     Db::table('ym_confession_image')
-                        ->insert(['article_id' => $article_id, 'image_path' => $imagePath[$i++]]);
+                        ->insert(['article_id' => $article_id, 'image_path' => $imagePath]);
                 } else {
                     return ['status' => 400,
                         'msg' => $files->getError()];
                 }
             }
-            return ['image_path' => $imagePath];
+            return ['status' => 200,
+                'msg' => '上传成功！'];
         } else {
+            //上传文章&返回插入状态
             $status = Db::table('ym_confession')
                 ->insert(['user_id' => $User["user_id"], 'content' => $content, 'release_time' => date('y-m-d h:i:s', time()), 'id' => $User["user_id"]]);
+            //判断上传是否成功
             if ($status == 1) {
                 return ['status' => 200,
                     'msg' => '上传成功！！'];

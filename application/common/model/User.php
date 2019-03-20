@@ -35,7 +35,6 @@ class User extends Model
         $this->password = passSalt($request->password);
         $this->sex = $request->sex;
         $this->id = $request->id;
-        $this->token = getToken($request->phone);//获取token
         $this->status = 1;
         $this->add_date = date("Y-m-d h:i:s");
         return $this->save();

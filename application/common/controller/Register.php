@@ -10,6 +10,7 @@ namespace app\common\controller;
 
 use app\common\model\User;
 use think\Controller;
+use think\facade\Cache;
 use think\Request;
 
 class Register extends Controller
@@ -68,8 +69,11 @@ class Register extends Controller
         }
         $User = new User();
         if($User->register($request)){
-            $User = $User->findByPhone($request->phone);
-            return json(['status'=>200,'msg'=>'注册成功','user'=>$User]);
+            $phone=$request->param('phone');
+            $token = getToken($phone);//获取token
+            Cache::set($phone,$token);
+            $User = $User->findByPhone($phone);
+            return json(['status'=>200,'msg'=>'注册成功','user'=>$User,'token'=>$token]);
         }else{
             return config('SYS_ERROR');
         }

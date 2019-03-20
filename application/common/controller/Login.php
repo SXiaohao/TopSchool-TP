@@ -11,6 +11,7 @@ namespace app\common\controller;
 use app\common\model\School;
 use app\common\model\User;
 use think\Controller;
+use think\facade\Cache;
 use think\Request;
 
 
@@ -24,10 +25,10 @@ class Login extends Controller
         //如果用户存在
         if($User) {
             if ($User->password === passSalt($password)) {//验证密码
-                $User->token = getToken($phone);//获取token
                 if($User->save()){
                     $School = new School();
                     $School = $School->getBySchoolId($User->id);
+                    Cache::set($phone,getToken($phone));//缓存获取的token
                     return ['status'=>200,'msg'=>'登陆成功','user'=>$User,'school'=>$School];
                 }else{
                     return config('SYS_ERROR');

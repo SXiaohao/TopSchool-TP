@@ -31,7 +31,7 @@ class Confession extends Model
             $Confession = Db::field('ym_confession.*, ym_user.user_name,avatar,GROUP_CONCAT(image_path)AS images_list')
                 ->table(['ym_user', 'ym_confession', 'ym_confession_image'])
                 ->where('ym_confession.user_id=ym_user.user_id')
-                ->where( 'ym_confession.article_id=ym_confession_image.article_id')
+                ->where('ym_confession.article_id=ym_confession_image.article_id')
                 ->group('ym_confession.article_id')
                 ->order('ym_confession.release_time', 'DESC')
                 ->page($page, 20)
@@ -63,32 +63,39 @@ class Confession extends Model
     public function getArticleContent($article_id)
     {
         try {
-            $ArticleContent = Db::field('ym_confession.user_id, ym_user.user_name,avatar,ym_confession.article_id,content,release_time,reading_volume,thumbs_up,
+            //查询文章内容
+            $articleContent = Db::field('ym_confession.user_id, ym_user.user_name,avatar,ym_confession.article_id,content,release_time,reading_volume,thumbs_up,
                  GROUP_CONCAT(image_path)AS images_list ')
                 ->table(['ym_user', 'ym_confession', 'ym_confession_image'])
                 ->where('ym_confession.article_id = ym_confession_image.article_id ')
                 ->where('ym_confession.user_id = ym_user.user_id')
                 ->where('ym_confession_image.article_id =' . $article_id)
                 ->select();
-            $ArticleContent[0]["release_time"] = uc_time_ago($ArticleContent[0]["release_time"]);
-            $ArticleContent[0]["images_list"] = explode(",", $ArticleContent[0]["images_list"]);
-            $Comment = Db::field('ym_confession_comment.* ,ym_user.user_name AS commentator_name,ym_user.avatar AS avatar')
+            //格式化文章发布时间
+            $articleContent[0]["release_time"] = uc_time_ago($articleContent[0]["release_time"]);
+            //图片字符串链接打散成字符串数组
+            $articleContent[0]["images_list"] = explode(",", $articleContent[0]["images_list"]);
+            //查询前5条评论
+            $comment = Db::field('ym_confession_comment.* ,ym_user.user_name AS commentator_name,ym_user.avatar AS avatar')
                 ->table(['ym_confession_comment', 'ym_user'])
                 ->where('ym_user.user_id=ym_confession_comment.commentator_id')
                 ->where('article_id =' . $article_id)
                 ->page(1, 5)
                 ->select();
-
-            if (count($Comment) > 0) {
-                $Comment = $this->foreachReply($Comment);
-                return ['ArticleContent' => array_to_object($ArticleContent),//改成对象
-                    'comment_list'=>$Comment,
+            //判断文章是否有评论
+            if (count($comment) > 0) {
+                $comment = $this->foreachReply($comment);
+                $articleContent["article"] = $articleContent["0"];
+                unset($articleContent["0"]);
+                //数组改成对象
+                return ['ArticleContent' => array_to_object($articleContent),
+                    'comment_list' => $comment,
                     'other' => '查看全部评论 ',
                     'status' => 200,
                     'msg' => "成功"];
             }
-            return ['ArticleContent' => $ArticleContent,
-                'comment_list'=>[],
+            return ['ArticleContent' => $articleContent,
+                'comment_list' => [],
                 'other' => '暂无评论',
                 'status' => 200,
                 'msg' => "成功"];
@@ -110,14 +117,16 @@ class Confession extends Model
     public function getCommentAndReply($article_id)
     {
         try {
-            $Comment = Db::field('ym_confession_comment.* ,ym_user.user_name AS commentator_name,ym_user.avatar AS avatar')
+            //查询文章所有评论
+            $comment = Db::field('ym_confession_comment.* ,ym_user.user_name AS commentator_name,ym_user.avatar AS avatar')
                 ->table(['ym_confession_comment', 'ym_user'])
                 ->where('ym_user.user_id=ym_confession_comment.commentator_id')
                 ->where('article_id=' . $article_id)
                 ->select();
-            $Comment = $this->foreachReply($Comment);
-            return ['commentAndReplyList' => $Comment,
-                'length' => count($Comment),
+            //填充回复
+            $comment = $this->foreachReply($comment);
+            return ['commentAndReplyList' => $comment,
+                'length' => count($comment),
                 'status' => 200,
                 'msg' => "成功"];
         } catch (DataNotFoundException $e) {
@@ -127,13 +136,6 @@ class Confession extends Model
         return ['status' => 400,
             'msg' => "查询失败"];
     }
-
-
-
-
-
-
-
 
 
     /**
@@ -160,10 +162,8 @@ class Confession extends Model
             } catch (ModelNotFoundException $e) {
             } catch (DbException $e) {
             }
-
         }
         return $Comment;
-
     }
 
 }

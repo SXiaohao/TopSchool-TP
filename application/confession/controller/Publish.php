@@ -28,7 +28,7 @@ class Publish extends Controller
     {
         if ($request->isPost()) {
             $Upload = new ConfessionImage();
-            $files = $request->file('img');
+            $files = $request->file('file');
             $phone = $request->param('phone');
             $content = $request->param('content');
             $token = $request->param('token');
