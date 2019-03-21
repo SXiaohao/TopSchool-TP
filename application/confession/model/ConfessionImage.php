@@ -39,7 +39,7 @@ class ConfessionImage extends Model
         //是否上传图片
         if ($files != null) {
             $article_id = Db::table('ym_confession')
-                ->insertGetId(['user_id' => $User["user_id"], 'content' => $content, 'release_time' => date('y-m-d h:i:s', time()), 'id' => $User["user_id"]]);
+                ->insertGetId(['user_id' => $User["user_id"], 'content' => $content, 'release_time' => date('y-m-d H:i:s', time()), 'id' => $User["user_id"]]);
             //上传图片并返回访问路径
             foreach ($files as $file) {
                 $info = $file->validate(['ext', 'jpg,jpeg,png,gif'])->move('../public/static/images');

@@ -11,6 +11,9 @@ namespace app\common\controller;
 use app\common\model\School;
 use app\common\model\User;
 use think\Controller;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\ModelNotFoundException;
+use think\exception\DbException;
 use think\facade\Cache;
 use think\Request;
 
@@ -25,14 +28,12 @@ class Login extends Controller
         //如果用户存在
         if($User) {
             if ($User->password === passSalt($password)) {//验证密码
-                if($User->save()){
                     $School = new School();
                     $School = $School->getBySchoolId($User->id);
-                    Cache::set($phone,getToken($phone));//缓存获取的token
-                    return ['status'=>200,'msg'=>'登陆成功','user'=>$User,'school'=>$School];
-                }else{
-                    return config('SYS_ERROR');
-                }
+                    $token=getToken($phone);
+                    Cache::set($phone,$token);//缓存获取的token
+                    return ['status'=>200,'msg'=>'登录成功','user'=>$User,'school'=>$School,'token'=>$token];
+
             }else{
                 return ['status'=>201,'msg'=>'手机号或密码错误!'];
             }

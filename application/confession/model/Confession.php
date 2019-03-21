@@ -59,6 +59,7 @@ class Confession extends Model
      *
      * @param $article_id '文章id'
      * @return array
+     * @throws \think\Exception
      */
     public function getArticleContent($article_id)
     {
@@ -82,6 +83,9 @@ class Confession extends Model
                 ->where('article_id =' . $article_id)
                 ->page(1, 5)
                 ->select();
+            //浏览量+1
+            Confession::where('article_id', $article_id)
+                ->update(['reading_volume' => ['inc', 1]]);
             //判断文章是否有评论
             if (count($comment) > 0) {
                 $comment = $this->foreachReply($comment);
@@ -123,12 +127,14 @@ class Confession extends Model
                 ->where('ym_user.user_id=ym_confession_comment.commentator_id')
                 ->where('article_id=' . $article_id)
                 ->select();
+
             //填充回复
             $comment = $this->foreachReply($comment);
             return ['commentAndReplyList' => $comment,
                 'length' => count($comment),
                 'status' => 200,
                 'msg' => "成功"];
+
         } catch (DataNotFoundException $e) {
         } catch (ModelNotFoundException $e) {
         } catch (DbException $e) {
@@ -137,6 +143,24 @@ class Confession extends Model
             'msg' => "查询失败"];
     }
 
+
+    /**
+     * 点赞
+     * @param $article_id
+     * @return array
+     * @throws \think\Exception
+     * @throws \think\exception\PDOException
+     */
+    public function addThumbUp($article_id)
+    {
+        //点赞数+1
+        if (Confession::where('article_id', $article_id)
+                ->update(['thumbs_up' => ['inc', 1]]) == 1) {
+            return ['status' => 200, 'msg' => '点赞成功！！'];
+        }
+        return ['status' => 400, 'msg' => '点赞失败！！'];
+
+    }
 
     /**
      * 将回复填充进评论链表
