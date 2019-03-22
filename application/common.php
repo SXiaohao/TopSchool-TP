@@ -26,9 +26,10 @@ function getToken($phone)
 function checkToken($token, $phone)
 {
 
-    $jwtToken=\think\facade\Cache::get($phone);
-    if ($token!=$jwtToken) {
-        die("token与用户不符");
+    $jwtToken = \think\facade\Cache::get($phone);
+    if ($token != $jwtToken) {
+        return false;
+        //die("token与用户不符:".$token."++++phone++++:".$phone);
     }
     $key = config('token_key');//解密秘钥
     $type = "HS256";//签名类型HS256
@@ -37,7 +38,8 @@ function checkToken($token, $phone)
         $json = Firebase\JWT\JWT::decode($jwtToken, $key, array($type));//解密签名token
         return $json;
     } catch (\Exception $exception) {//如果解密失败，或者超过有效期则die
-        die("token已过期");
+        return false;
+        //die("token已过期");
     }
 }
 
@@ -84,22 +86,25 @@ function passSalt($psw)
 }
 
 //时间格式化（时间戳）
-function uc_time_ago($ptime)
+function uc_time_ago($targetTime)
 {
-    date_default_timezone_set('PRC');
-    $ptime = strtotime($ptime);
-    $etime = time() - $ptime;
-    switch ($etime) {
-        case $etime <= 24 * 60 * 60:
-            $msg = date('Ymd', $ptime) == date('Ymd', time()) ? '今天 ' . date('H:i', $ptime) : '昨天 ' . date('H:i', $ptime);
-            break;
-        case $etime > 24 * 60 * 60 && $etime <= 2 * 24 * 60 * 60:
-            $msg = date('Ymd', $ptime) + 1 == date('Ymd', time()) ? '昨天 ' . date('H:i', $ptime) : '前天 ' . date('H:i', $ptime);
-            break;
-        default:
-            $msg = date('m月d日 ', $ptime);
+    $targetTime = strtotime($targetTime);
+    // 今天最大时间
+    $todayLast = strtotime(date('Y-m-d 23:59:59'));
+    $agoTime = $todayLast - $targetTime;
+    $agoDay = floor($agoTime / 86400);
+
+    if($agoDay == 0) {
+        $result = '今天 ' . date('H:i', $targetTime);
+    } elseif ($agoDay == 1) {
+        $result = '昨天 ' . date('H:i', $targetTime);
+    } elseif ($agoDay == 2) {
+        $result = '前天 ' . date('H:i', $targetTime);
+    }else {
+        $result = date('m月d日 ', $targetTime);
     }
-    return $msg;
+    return $result;
+
 }
 
 /**

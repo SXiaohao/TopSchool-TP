@@ -33,7 +33,9 @@ class ConfessionImage extends Model
     public function uploadArticle($files, $content, $token, $phone)
     {
         //验证token
-        checkToken($token, $phone);
+        if (!checkToken($token, $phone)){
+            return config('NOT_SUPPORTED');
+        }
         //通过手机号查询用户信息
         $User = Db::table('ym_user')->where('phone', $phone)->find();
         //是否上传图片

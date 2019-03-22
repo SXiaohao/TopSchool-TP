@@ -18,7 +18,7 @@ return [
     'NOT_LOGIN'=>['status'=>400, 'msg'=>"账号身份过期"],
     'SYS_ERROR'=>['status'=>401, 'msg'=>"服务器异常,请稍后再试"],
     'PARAMS_ERROR'=>['status'=>409, 'msg'=>"非法请求"],
-    'NOT_SUPPORTED'=>['status'=>410, 'msg'=>"不支持或已经废弃"],
+    'NOT_SUPPORTED'=>['status'=>410, 'msg'=>"token已过期"],
     'TOO_FREQUENT'=>['status'=>445, 'msg'=>"太频繁的调用"],
     'UNKNOWN_ERROR'=>['status'=>499, 'msg'=>"未知错误"],
     //token key

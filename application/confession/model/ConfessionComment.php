@@ -27,7 +27,10 @@ class ConfessionComment extends Model
      */
     public function addComment($article_id, $phone, $token, $comment_content)
     {
-        //checkToken($token, $phone);
+        //验证token
+        if (!checkToken($token, $phone)){
+            return config('NOT_SUPPORTED');
+        }
         $commentator_id= User::where('phone', $phone)->value('user_id');
         if ($commentator_id != null) {
             if (Db::name('confession_comment')

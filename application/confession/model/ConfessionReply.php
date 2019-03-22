@@ -25,7 +25,10 @@ class ConfessionReply
      */
     public function addReply($comment_id, $replier_phone, $toReplier_id, $token, $reply_content)
     {
-        checkToken($replier_phone, $token);
+        //验证token
+        /*if (!checkToken($token, $replier_phone)){
+            return config('NOT_SUPPORTED');
+        }*/
         $replier_id = User::where('phone', $replier_phone)->value('user_id');
 
         if ($replier_id != null && $toReplier_id != null) {
@@ -37,6 +40,6 @@ class ConfessionReply
                 return ['status' => 200, 'msg' => '回复成功！！'];
             }
         }
-        return ['status' => 400, 'msg' => '回复失败！！'];
+        return ['status' => 400, 'msg' => '回复失败！！'.$toReplier_id."comment_id:".$comment_id];
     }
 }

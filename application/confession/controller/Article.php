@@ -113,11 +113,31 @@ class Article extends Controller
      * @param Request $request
      * @return array|mixed
      */
-    public function addReply(Request $request)
+    public function replyComment(Request $request)
     {
         if ($request->isPost()) {
             $comment_id = $request->param('comment_id');
-            $replier_phone = $request->param('replier_phone');
+            $replier_phone = $request->param('phone');
+            $toReplier_id = $request->param('commentator_id');
+            $token = $request->param('token');
+            $reply_content = $request->param('reply_content');
+
+            $reply = new ConfessionReply();
+            return $reply->addReply($comment_id, $replier_phone, $toReplier_id, $token, $reply_content);
+        }
+        return config('PARAMS_ERROR');
+    }
+
+    /**
+     * 添加回复
+     * @param Request $request
+     * @return array|mixed
+     */
+    public function reply(Request $request)
+    {
+        if ($request->isPost()) {
+            $comment_id = $request->param('comment_id');
+            $replier_phone = $request->param('phone');
             $toReplier_id = $request->param('toReplier_id');
             $token = $request->param('token');
             $reply_content = $request->param('reply_content');

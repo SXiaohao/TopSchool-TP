@@ -86,11 +86,12 @@ class Confession extends Model
             //浏览量+1
             Confession::where('article_id', $article_id)
                 ->update(['reading_volume' => ['inc', 1]]);
+            $articleContent["article"] = $articleContent["0"];
+            unset($articleContent["0"]);
             //判断文章是否有评论
             if (count($comment) > 0) {
                 $comment = $this->foreachReply($comment);
-                $articleContent["article"] = $articleContent["0"];
-                unset($articleContent["0"]);
+
                 //数组改成对象
                 return ['ArticleContent' => array_to_object($articleContent),
                     'comment_list' => $comment,
@@ -98,6 +99,7 @@ class Confession extends Model
                     'status' => 200,
                     'msg' => "成功"];
             }
+
             return ['ArticleContent' => $articleContent,
                 'comment_list' => [],
                 'other' => '暂无评论',
