@@ -9,6 +9,7 @@
 namespace app\confession\controller;
 
 
+use app\common\model\thumbsUp;
 use app\confession\model\Confession;
 use app\confession\model\ConfessionComment;
 use app\confession\model\ConfessionReply;
@@ -49,43 +50,6 @@ class Article extends Controller
         }
         return config('PARAMS_ERROR');
     }
-
-    /**
-     * 文章点赞
-     * @param Request $request
-     * @return mixed
-     * @throws \think\Exception
-     * @throws \think\exception\PDOException
-     */
-    public function articleThumbUp(Request $request)
-    {
-        if ($request->isGet()) {
-            $article_id = $request->param('article_id');
-            $article = new Confession();
-            $article->addThumbUp($article_id);
-
-        }
-        return config('PARAMS_ERROR');
-    }
-
-    /**
-     * 评论点赞
-     * @param Request $request
-     * @return mixed
-     * @throws \think\Exception
-     * @throws \think\exception\PDOException
-     */
-    public function commentThumbUp(Request $request)
-    {
-        if ($request->isGet()) {
-            $comment_id = $request->param('comment_id');
-            $comment = new ConfessionComment();
-            $comment->addThumbUp($comment_id);
-
-        }
-        return config('PARAMS_ERROR');
-    }
-
 
     /**
      * 添加评论
@@ -144,6 +108,20 @@ class Article extends Controller
 
             $reply = new ConfessionReply();
             return $reply->addReply($comment_id, $replier_phone, $toReplier_id, $token, $reply_content);
+        }
+        return config('PARAMS_ERROR');
+    }
+
+    public function addThumbsUp(Request $request){
+        if ($request->isPost()){
+            $comment_id=$request->param('comment_id');
+            $phone = $request->param('phone');
+            $article_id = $request->param('article_id');
+            $thumbsUp=new thumbsUp();
+            if ($comment_id==0){
+               return $thumbsUp->addThumbsUp($phone,'article',$article_id);
+            }
+            return $thumbsUp->addThumbsUp($phone,'comment',$comment_id);
         }
         return config('PARAMS_ERROR');
     }

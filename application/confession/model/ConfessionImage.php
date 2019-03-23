@@ -17,7 +17,7 @@ use think\Model;
 
 class ConfessionImage extends Model
 {
-    const LOCAL_PATH = 'http://127.0.0.1';
+    const LOCAL_PATH = 'http://www.hckj99.cn';
 
     /**
      * 文章上传

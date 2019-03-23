@@ -9,6 +9,7 @@
 namespace app\confession\model;
 
 
+use app\common\model\thumbsUp;
 use think\Db;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\ModelNotFoundException;
@@ -72,6 +73,10 @@ class Confession extends Model
                 ->where('ym_confession.user_id = ym_user.user_id')
                 ->where('ym_confession_image.article_id =' . $article_id)
                 ->select();
+            //文章是否点过赞
+           /* $articleContent[0]["thumbs_up_status"] = Db::table('ym_thumbsUp')
+                ->where(['phone' => '18841725546', 'type_id' => $article_id, 'thumbs_up_type' => 'article'])
+                ->value('thumbs_up_status');*/
             //格式化文章发布时间
             $articleContent[0]["release_time"] = uc_time_ago($articleContent[0]["release_time"]);
             //图片字符串链接打散成字符串数组
@@ -110,6 +115,7 @@ class Confession extends Model
         } catch (ModelNotFoundException $e) {
         } catch (DbException $e) {
         }
+
         return ['status' => 400,
             'msg' => "查询失败"];
     }
@@ -147,24 +153,6 @@ class Confession extends Model
 
 
     /**
-     * 点赞
-     * @param $article_id
-     * @return array
-     * @throws \think\Exception
-     * @throws \think\exception\PDOException
-     */
-    public function addThumbUp($article_id)
-    {
-        //点赞数+1
-        if (Confession::where('article_id', $article_id)
-                ->update(['thumbs_up' => ['inc', 1]]) == 1) {
-            return ['status' => 200, 'msg' => '点赞成功！！'];
-        }
-        return ['status' => 400, 'msg' => '点赞失败！！'];
-
-    }
-
-    /**
      * 将回复填充进评论链表
      * @param $Comment '评论链表'
      * @return mixed
@@ -182,8 +170,13 @@ class Confession extends Model
                 for ($j = 0; $j < count($Reply); $j++) {
                     $Reply[$j]["reply_time"] = uc_time_ago($Reply[$j]["reply_time"]);
                 }
+                //是否点过赞
+                /*$Comment[$i]["thumbs_up_status"] = Db::table('ym_thumbsUp')
+                    ->where(['phone' => '18841725546', 'type_id' => $Comment[$i]["comment_id"], 'thumbs_up_type' => 'comment'])
+                    ->value('thumbs_up_status');*/
                 $Comment[$i]["comment_time"] = uc_time_ago($Comment[$i]["comment_time"]);
                 $Comment[$i]["reply_list"] = $Reply;
+
             } catch (DataNotFoundException $e) {
             } catch (ModelNotFoundException $e) {
             } catch (DbException $e) {
