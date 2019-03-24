@@ -25,10 +25,10 @@ class ConfessionReply
      */
     public function addReply($comment_id, $replier_phone, $toReplier_id, $token, $reply_content)
     {
-        //验证token
-        /*if (!checkToken($token, $replier_phone)){
+       //验证token
+        if (!checkToken($token, $replier_phone)){
             return config('NOT_SUPPORTED');
-        }*/
+        }
         $replier_id = User::where('phone', $replier_phone)->value('user_id');
 
         if ($replier_id != null && $toReplier_id != null) {

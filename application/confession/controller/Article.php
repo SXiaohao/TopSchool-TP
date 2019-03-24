@@ -29,8 +29,9 @@ class Article extends Controller
     {
         if ($request->isGet()) {
             $article_id = $request->param('article_id');
+            $phone=$request->param('phone');
             $Article = new Confession();
-            return $Article->getArticleContent($article_id);
+            return $Article->getArticleContent($article_id,$phone);
         }
         return config('PARAMS_ERROR');
     }
@@ -45,8 +46,9 @@ class Article extends Controller
     {
         if ($request->isGet()) {
             $article_id = $request->param('article_id');
+            $phone=$request->param('phone');
             $article = new Confession();
-            return $article->getCommentAndReply($article_id);
+            return $article->getCommentAndReply($article_id,$phone);
         }
         return config('PARAMS_ERROR');
     }
@@ -117,11 +119,12 @@ class Article extends Controller
             $comment_id=$request->param('comment_id');
             $phone = $request->param('phone');
             $article_id = $request->param('article_id');
+            $token=$request->param('token');
             $thumbsUp=new thumbsUp();
-            if ($comment_id==0){
-               return $thumbsUp->addThumbsUp($phone,'article',$article_id);
+            if ($article_id!=null){
+               return $thumbsUp->addThumbsUp($phone,'article',$article_id,$token);
             }
-            return $thumbsUp->addThumbsUp($phone,'comment',$comment_id);
+            return $thumbsUp->addThumbsUp($phone,'comment',$comment_id,$token);
         }
         return config('PARAMS_ERROR');
     }

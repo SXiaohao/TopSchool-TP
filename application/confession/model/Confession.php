@@ -39,7 +39,9 @@ class Confession extends Model
                 ->select();
 
             for ($i = 0; $i < count($Confession); $i++) {
+                if (strlen($Confession[$i]["content"] > 240)){
                 $Confession[$i]["content"] = mb_strcut($Confession[$i]["content"], 0, 240) . '...';
+                }
                 $Confession[$i]["release_time"] = uc_time_ago($Confession[$i]["release_time"]);
                 $Confession[$i]["images_list"] = explode(",", $Confession[$i]["images_list"]);
             }
@@ -59,10 +61,11 @@ class Confession extends Model
      * 文章内容 附带 5条评论
      *
      * @param $article_id '文章id'
+     * @param $phone
      * @return array
      * @throws \think\Exception
      */
-    public function getArticleContent($article_id)
+    public function getArticleContent($article_id, $phone)
     {
         try {
             //查询文章内容
@@ -74,9 +77,9 @@ class Confession extends Model
                 ->where('ym_confession_image.article_id =' . $article_id)
                 ->select();
             //文章是否点过赞
-           /* $articleContent[0]["thumbs_up_status"] = Db::table('ym_thumbsUp')
-                ->where(['phone' => '18841725546', 'type_id' => $article_id, 'thumbs_up_type' => 'article'])
-                ->value('thumbs_up_status');*/
+            $articleContent[0]["thumbs_up_status"] = Db::table('ym_thumbsup')
+                ->where(['phone' => $phone, 'type_id' => $article_id, 'thumbs_up_type' => 'article'])
+                ->value('thumbs_up_status');
             //格式化文章发布时间
             $articleContent[0]["release_time"] = uc_time_ago($articleContent[0]["release_time"]);
             //图片字符串链接打散成字符串数组
@@ -95,7 +98,7 @@ class Confession extends Model
             unset($articleContent["0"]);
             //判断文章是否有评论
             if (count($comment) > 0) {
-                $comment = $this->foreachReply($comment);
+                $comment = $this->foreachReply($comment, $phone);
 
                 //数组改成对象
                 return ['ArticleContent' => array_to_object($articleContent),
@@ -112,6 +115,7 @@ class Confession extends Model
                 'msg' => "成功"];
 
         } catch (DataNotFoundException $e) {
+            var_dump($this->getLastSql());
         } catch (ModelNotFoundException $e) {
         } catch (DbException $e) {
         }
@@ -126,7 +130,7 @@ class Confession extends Model
      * @param $article_id '文章id'
      * @return array '文章的全部的评论'
      */
-    public function getCommentAndReply($article_id)
+    public function getCommentAndReply($article_id, $phone)
     {
         try {
             //查询文章所有评论
@@ -137,7 +141,7 @@ class Confession extends Model
                 ->select();
 
             //填充回复
-            $comment = $this->foreachReply($comment);
+            $comment = $this->foreachReply($comment, $phone);
             return ['commentAndReplyList' => $comment,
                 'length' => count($comment),
                 'status' => 200,
@@ -157,7 +161,7 @@ class Confession extends Model
      * @param $Comment '评论链表'
      * @return mixed
      */
-    private function foreachReply($Comment)
+    private function foreachReply($Comment, $phone)
     {
         for ($i = 0; $i < count($Comment); $i++) {
             try {
@@ -171,9 +175,9 @@ class Confession extends Model
                     $Reply[$j]["reply_time"] = uc_time_ago($Reply[$j]["reply_time"]);
                 }
                 //是否点过赞
-                /*$Comment[$i]["thumbs_up_status"] = Db::table('ym_thumbsUp')
-                    ->where(['phone' => '18841725546', 'type_id' => $Comment[$i]["comment_id"], 'thumbs_up_type' => 'comment'])
-                    ->value('thumbs_up_status');*/
+                $Comment[$i]["thumbs_up_status"] = Db::table('ym_thumbsup')
+                    ->where(['phone' => $phone, 'type_id' => $Comment[$i]["comment_id"], 'thumbs_up_type' => 'comment'])
+                    ->value('thumbs_up_status');
                 $Comment[$i]["comment_time"] = uc_time_ago($Comment[$i]["comment_time"]);
                 $Comment[$i]["reply_list"] = $Reply;
 
