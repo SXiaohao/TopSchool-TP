@@ -9,7 +9,6 @@
 namespace app\confession\model;
 
 
-use app\common\model\thumbsUp;
 use think\Db;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\ModelNotFoundException;
@@ -159,6 +158,7 @@ class Confession extends Model
     /**
      * 将回复填充进评论链表
      * @param $Comment '评论链表'
+     * @param $phone
      * @return mixed
      */
     private function foreachReply($Comment, $phone)
