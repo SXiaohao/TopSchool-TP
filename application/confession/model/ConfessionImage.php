@@ -17,7 +17,6 @@ use think\Model;
 
 class ConfessionImage extends Model
 {
-    const LOCAL_PATH = 'http://127.0.0.1';
 
     /**
      * 文章上传
@@ -46,7 +45,7 @@ class ConfessionImage extends Model
             foreach ($files as $file) {
                 $info = $file->validate(['ext', 'jpg,jpeg,png,gif'])->move('../public/static/images');
                 if ($info) {
-                    $imagePath = ConfessionImage::LOCAL_PATH . '/static/images/' . $info->getSaveName();
+                    $imagePath = config('local_path') . '/static/images/' . $info->getSaveName();
                     Db::table('ym_confession_image')
                         ->insert(['article_id' => $article_id, 'image_path' => $imagePath]);
                 } else {
