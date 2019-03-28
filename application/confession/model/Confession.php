@@ -38,7 +38,7 @@ class Confession extends Model
                 ->select();
 
             for ($i = 0; $i < count($Confession); $i++) {
-                if (strlen($Confession[$i]["content"] > 240)){
+                if (strlen($Confession[$i]["content"]) >240){
                 $Confession[$i]["content"] = mb_strcut($Confession[$i]["content"], 0, 240) . '...';
                 }
                 $Confession[$i]["release_time"] = uc_time_ago($Confession[$i]["release_time"]);

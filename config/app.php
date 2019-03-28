@@ -22,7 +22,7 @@ return [
     'TOO_FREQUENT'=>['status'=>445, 'msg'=>"太频繁的调用"],
     'UNKNOWN_ERROR'=>['status'=>499, 'msg'=>"未知错误"],
     //local_path
-    'local_path'            =>'http://123.151.6.92',
+    'local_path'            =>'http://123.151.6.123',
     //token key
     'token_key'             =>'top_school_no1',
     //salt

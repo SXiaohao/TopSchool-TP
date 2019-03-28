@@ -22,7 +22,8 @@
         "topthink/think-helper": "^3.0",
         "firebase/php-jwt": "^5.0",
         "alibabacloud/client": "^1.0",
-      "ext-mbstring": "*"
+      "ext-mbstring": "*",
+      "ext-json": "*"
     },
     "autoload": {
         "psr-4": {
