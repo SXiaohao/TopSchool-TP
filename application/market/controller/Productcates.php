@@ -35,7 +35,7 @@ class Productcates extends Controller
         if ($request->isGet()) {
             return config('PARAMS_ERROR');
         }
-        $Productcates = new \app\market\model\Productcates();
+        $Productcates = new Productcates();
         return $Productcates->schProductcate($request->param('title'));
     }
 
@@ -49,7 +49,7 @@ class Productcates extends Controller
         if ($request->isGet()) {
             return config('PARAMS_ERROR');
         }
-        $productsch = new \app\market\model\Productcates();
+        $productsch = new Productcates();
         return $productsch->findType($request->param('title'));
     }
 
@@ -86,6 +86,8 @@ class Productcates extends Controller
 
     /**
      * 修改商品类别
+     * @param Request $request
+     * @return mixed
      */
     public function updateProductcates(Request $request)
     {

@@ -24,9 +24,7 @@ class TopChat extends Controller
         if ($request->isPost()) {
             $chat = new Chat();
             $chat->uploadChat($request);
-
         }
-        //return config('PARAMS_ERROR');
     }
 
     /**

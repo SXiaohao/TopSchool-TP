@@ -25,13 +25,13 @@ class Chat extends Model
     public function uploadChat($request)
     {
 
-        $msg=$request->msg;
+        $msg = $request->msg;
         return $this->save(['id' => $request->id,
             'name' => $request->name,
             'avatar' => $request->avatar,
             'to_id' => $request->to_id,
             'msg' => $this->userTextEncode($msg),
-            'date' =>  date('y-m-d H:i:s', time()),
+            'date' => date('y-m-d H:i:s', time()),
             'ctype' => $request->ctype]);
     }
 
@@ -45,7 +45,7 @@ class Chat extends Model
         //上传图片并返回访问路径
         $info = $file->validate(['ext', 'jpg,jpeg,png,gif'])->move('../public/static/chat');
         if ($info) {
-            $getSaveName=str_replace("\\","/",$info->getSaveName());
+            $getSaveName = str_replace("\\", "/", $info->getSaveName());
             $imagePath = config('local_path') . "/static/chat/" . $getSaveName;
         } else {
             return ['status' => 400,
@@ -67,7 +67,7 @@ class Chat extends Model
         //上传图片并返回访问路径
         $info = $file->move('../public/static/voice');
         if ($info) {
-            $getSaveName=str_replace("\\","/",$info->getSaveName());
+            $getSaveName = str_replace("\\", "/", $info->getSaveName());
             $voicePath = config('local_path') . "/static/voice/" . $getSaveName;
         } else {
             return ['status' => 400,
@@ -79,30 +79,32 @@ class Chat extends Model
             'voicePath' => $voicePath];
     }
 
-    public function historyRecord($id,$to_id,$page){
+    public function historyRecord($id, $to_id, $page)
+    {
         try {
             $history = Db::field('*')->table('ym_chat')
                 ->where(['id' => $id, 'to_id' => $to_id] || ['id' => $to_id, 'to_id' => $id])
                 ->order('date', 'DESC')
                 ->page($page, 10)
                 ->select();
-            for ($i=0;$i<count($history);$i++){
-                $history[$i]["msg"]=$this->userTextDecode($history[$i]["msg"]);
+            for ($i = 0; $i < count($history); $i++) {
+                $history[$i]["msg"] = $this->userTextDecode($history[$i]["msg"]);
             }
             sort($history);
-            return ['status'=>200,'msg'=>'查询成功！！','history'=>$history];
+            return ['status' => 200, 'msg' => '查询成功！！', 'history' => $history];
         } catch (DataNotFoundException $e) {
         } catch (ModelNotFoundException $e) {
         } catch (DbException $e) {
         }
-        return ['status'=>400,'msg'=>'查询失败！！'];
+        return ['status' => 400, 'msg' => '查询失败！！'];
 
     }
 
 
-    public function updateStatus($id,$to_id){
+    public function updateStatus($id, $to_id)
+    {
         Db::name('chat')
-            ->where(['id'=>$to_id,'to_id'=> $id])
+            ->where(['id' => $to_id, 'to_id' => $id])
             ->update(['is_read' => 1]);
     }
 
@@ -111,24 +113,27 @@ class Chat extends Model
      * @param $str
      * @return mixed|string
      */
-    function userTextEncode($str){
-        if(!is_string($str))return $str;
-        if(!$str || $str=='undefined')return '';
+    private function userTextEncode($str)
+    {
+        if (!is_string($str)) return $str;
+        if (!$str || $str == 'undefined') return '';
 
         $text = json_encode($str); //暴露出unicode
-        $text = preg_replace_callback("/(\\\u[ed][0-9a-f]{3})/i",function($str){
+        $text = preg_replace_callback("/(\\\u[ed][0-9a-f]{3})/i", function ($str) {
             return addslashes($str[0]);
-        },$text); //将emoji的unicode留下，其他不动，这里的正则比原答案增加了d，因为我发现我很多emoji实际上是\ud开头的，反而暂时没发现有\ue开头。
+        }, $text); //将emoji的unicode留下，其他不动，这里的正则比原答案增加了d，因为我发现我很多emoji实际上是\ud开头的，反而暂时没发现有\ue开头。
         return json_decode($text);
     }
+
     /**
-    解码上面的转义
+     * 解码上面的转义
      */
-    function userTextDecode($str){
+    private function userTextDecode($str)
+    {
         $text = json_encode($str); //暴露出unicode
-        $text = preg_replace_callback('/\\\\\\\\/i',function($str){
+        $text = preg_replace_callback('/\\\\\\\\/i', function ($str) {
             return '\\';
-        },$text); //将两条斜杠变成一条，其他不动
+        }, $text); //将两条斜杠变成一条，其他不动
         return json_decode($text);
     }
 }

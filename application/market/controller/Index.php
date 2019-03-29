@@ -8,8 +8,9 @@ namespace app\market\controller;
 
 use think\Controller;
 use think\Request;
+use app\market\model\Market;
 
-class Market extends Controller
+class Index extends Controller
 {
     /**
      * 注册超市
@@ -19,27 +20,30 @@ class Market extends Controller
     public function regMarket(Request $request)
     {
         if ($request->isPost()) {
-            return config('PARAMS_ERROR');
+            $Market = new Market();
+            return $Market->regMarket($request);
         }
-        $Market = new \app\market\model\Market();
-        return $Market->regMarket($request);
+        return config('PARAMS_ERROR');
     }
-
 
     /**
-     * 精确查找超市
+     * 超市列表查询
      * @param Request $request
-     * @return array|mixed
+     * @return mixed
      */
-    public function schMarket(Request $request)
+    public function findOfType(Request $request)
     {
         if ($request->isPost()) {
-            return config('PARAMS_ERROR');
+            $page = $request->param('page');
+            $order = $request->param('order');
+            $type = $request->param('type');
+            $priceOrder = $request->param('priceOrder');
+            $market_school = $request->param('market_school');
+            $market = new Market();
+           return $market->getMarketList($page, $order, $type, $priceOrder, $market_school);
         }
-        $Market = new \app\market\model\Market();
-        return $Market->schMarket($request->param('market_name'));
+        return config('PARAMS_ERROR');
     }
-
 
     /**
      * 分页查询
@@ -50,24 +54,24 @@ class Market extends Controller
     {
         if ($request->isPost()) {
             $page = $request->param('page');
-            $Confession = new \app\market\model\Market();
+            $Confession = new Market();
             return $Confession->findOfAll($page);
         }
         return config('PARAMS_ERROR');
     }
 
-
     /*
      * 测试中
      */
-    public function schType(Request $request){
+    public function schType(Request $request)
+    {
         if ($request->isPost()) {
 
             $school = $request->param('market_school');
             $type = $request->param('type');
 
-            $Confession = new \app\market\model\Market();
-            return $Confession->schType($type,$school);
+            $Confession = new Market();
+            return $Confession->schType($type, $school);
         }
         return config('PARAMS_ERROR');
     }

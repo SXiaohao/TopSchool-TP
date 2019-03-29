@@ -26,7 +26,7 @@ class ChatList
             foreach ($msgList as $msg) {
                 Db::table('ym_chat_list')
                     ->data(['id' => $msg["id"],
-                        'to_id' => $msg["toId"],
+                        'to_id' => $msg["to_id"],
                         'avatar' => $msg["avatar"],
                         'name' => $msg["name"],
                         'msg' => $msg["msg"],
