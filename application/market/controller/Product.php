@@ -75,4 +75,13 @@ class Product extends Controller
         return $product->updateProduct($title, $keywords, $desc, $price, $cost);
     }
 
+    public function select(Request $request){
+        if ($request->isGet()){
+            $market_id=$request->param('market_id');
+            $productcates=new \app\market\model\Productcates();
+            return $productcates->getProductList($market_id);
+        }
+        return config('PARAMS_ERROR');
+    }
+
 }

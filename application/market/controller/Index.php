@@ -37,10 +37,10 @@ class Index extends Controller
             $page = $request->param('page');
             $order = $request->param('order');
             $type = $request->param('type');
-            $priceOrder = $request->param('priceOrder');
+            $sale_volume = $request->param('sale_volume');
             $market_school = $request->param('market_school');
             $market = new Market();
-           return $market->getMarketList($page, $order, $type, $priceOrder, $market_school);
+           return $market->getMarketList($page, $order, $type, $sale_volume, $market_school);
         }
         return config('PARAMS_ERROR');
     }

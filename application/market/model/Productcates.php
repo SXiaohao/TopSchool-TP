@@ -107,4 +107,21 @@ ON ym_productcates.id = ym_product.cid where ym_productcates.title = '$title'");
         return Db::table('ym_productcates')->where('title', $title)->update(['title' => $newtitle]);
     }
 
+
+
+     public function getProduct($market_id,$cateid)
+    {
+        return Db::table('ym_product')->where(['market_id' => $market_id,'cateid'=>$cateid])->select();
+    }
+    public function getProductList($market_id){
+        $cate=Db::table('ym_productcates')->where(['market_id'=>$market_id,'status'=>1])
+            ->order('ord','ASC')->select();
+        $cateproducts=null;
+
+        foreach ($cate as $value){
+            $cateproducts["cateproducts".$value["cateid"]]=$this->getProduct($value["market_id"],$value["cateid"]);
+        }
+
+        return ['status'=>200,'msg'=>'查询成功！！','allProduct'=>$cateproducts,'mainCate'=>$cate];
+    }
 }

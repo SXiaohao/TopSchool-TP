@@ -8,6 +8,9 @@ namespace app\market\model;
 
 
 use think\Db;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\ModelNotFoundException;
+use think\exception\DbException;
 use think\Model;
 
 class Product extends Model
@@ -66,4 +69,7 @@ class Product extends Model
     {
         return Db::table('ym_product')->where('title', $title)->update(['keywords' => $keywords, 'desc' => $desc, 'price' => $price, 'cost' => $cost]);
     }
+
+
+
 }
