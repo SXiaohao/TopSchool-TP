@@ -14,7 +14,7 @@ class User extends Model
     /**
      * 查询手机号是否存在，存在返回当前对象，不存在返回null
      * @param $phone
-     * @return array|\PDOStatement|string|Model|null
+     * @return array
      * @throws \think\db\exception\DataNotFoundException
      * @throws \think\db\exception\ModelNotFoundException
      * @throws \think\exception\DbException

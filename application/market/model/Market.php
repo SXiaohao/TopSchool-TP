@@ -24,18 +24,24 @@ class Market extends Model
      */
     public function regMarket($market)
     {
-        return $this->save(['user_id' => $market->user_id,
+        if ($this->save(['user_id' => $market->user_id,
             'market_name' => $market->market_name,
+            'billboard' => $market->billboard,
             'market_school' => $market->market_school,
             'dorm_tower' => $market->dorm_tower,
             'dorm_num' => $market->dorm_num,
             'type' => $market->type,
-            'star_level' => 1,
-            'status' => 1,
-            'add_date' => date('Y-m-d H:i:s'),
-            'notice' => $market->notice]);
+            'add_date' => date('Y-m-d H:i:s', time()),
+            'notice' => implode("|", $market->notice)])) {
+            return ['status' => 200, 'msg' => '注册成功！！'];
+        }
+        return ['status' => 400, 'msg' => '注册失败！！'];
     }
 
+    public function findOfPhone($phone)
+    {
+        return Db::table('ym_user')->where(['phone'=>$phone])->value('merchant');
+    }
 
     /**
      * 分页显示
@@ -49,7 +55,6 @@ class Market extends Model
                 ->table('ym_market')
                 ->page($page, 10)
                 ->select();
-
 
             for ($i = 0; $i < count($Market); $i++) {
                 $Market[$i]["notice"] = mb_strcut($Market[$i]["notice"], 0, 50) . '...';
@@ -208,8 +213,8 @@ class Market extends Model
                             ->order('sale_volume', $sale_volume)
                             ->page($page, 10)
                             ->select();
-                        for ($i=0;$i<count($marketList);$i++){
-                            $marketList[$i]["notice"]=explode("|", $marketList[$i]["notice"]);
+                        for ($i = 0; $i < count($marketList); $i++) {
+                            $marketList[$i]["notice"] = explode("|", $marketList[$i]["notice"]);
                         }
 
                     } else {
@@ -220,8 +225,8 @@ class Market extends Model
                             ->order('sale_volume', $sale_volume)
                             ->page($page, 10)
                             ->select();
-                        for ($i=0;$i<count($marketList);$i++){
-                            $marketList[$i]["notice"]=explode("|", $marketList[$i]["notice"]);
+                        for ($i = 0; $i < count($marketList); $i++) {
+                            $marketList[$i]["notice"] = explode("|", $marketList[$i]["notice"]);
                         }
                     }
                     return ['status' => 200, 'msg' => '查询成功！！',
@@ -234,8 +239,8 @@ class Market extends Model
                             ->order('sale_volume', $sale_volume)
                             ->page($page, 10)
                             ->select();
-                        for ($i=0;$i<count($marketList);$i++){
-                            $marketList[$i]["notice"]=explode("|", $marketList[$i]["notice"]);
+                        for ($i = 0; $i < count($marketList); $i++) {
+                            $marketList[$i]["notice"] = explode("|", $marketList[$i]["notice"]);
                         }
                     } else {
                         $marketList = Db::table('ym_market')
@@ -244,8 +249,8 @@ class Market extends Model
                             ->order('sale_volume', $sale_volume)
                             ->page($page, 10)
                             ->select();
-                        for ($i=0;$i<count($marketList);$i++){
-                            $marketList[$i]["notice"]=explode("|", $marketList[$i]["notice"]);
+                        for ($i = 0; $i < count($marketList); $i++) {
+                            $marketList[$i]["notice"] = explode("|", $marketList[$i]["notice"]);
                         }
                     }
                     return ['status' => 200, 'msg' => '查询成功！！',
@@ -258,8 +263,8 @@ class Market extends Model
                             ->order('sale_volume', $sale_volume)
                             ->page($page, 10)
                             ->select();
-                        for ($i=0;$i<count($marketList);$i++){
-                            $marketList[$i]["notice"]=explode("|", $marketList[$i]["notice"]);
+                        for ($i = 0; $i < count($marketList); $i++) {
+                            $marketList[$i]["notice"] = explode("|", $marketList[$i]["notice"]);
                         }
                     } else {
                         $marketList = Db::table('ym_market')
@@ -268,8 +273,8 @@ class Market extends Model
                             ->order('sale_volume', $sale_volume)
                             ->page($page, 10)
                             ->select();
-                        for ($i=0;$i<count($marketList);$i++){
-                            $marketList[$i]["notice"]=explode("|", $marketList[$i]["notice"]);
+                        for ($i = 0; $i < count($marketList); $i++) {
+                            $marketList[$i]["notice"] = explode("|", $marketList[$i]["notice"]);
                         }
                     }
                     return ['status' => 200, 'msg' => '查询成功！！',

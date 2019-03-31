@@ -27,6 +27,20 @@ class Index extends Controller
     }
 
     /**
+     * 获取是否为商家
+     * @param Request $request
+     * @return mixed
+     */
+    public function getMerchant(Request $request){
+        if ($request->isGet()) {
+            $Market = new Market();
+            $phone=$request->param('phone');
+            return $Market->findOfPhone($phone);
+        }
+        return config('PARAMS_ERROR');
+    }
+
+    /**
      * 超市列表查询
      * @param Request $request
      * @return mixed

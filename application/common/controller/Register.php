@@ -15,7 +15,15 @@ use think\Request;
 
 class Register extends Controller
 {
-    //发送验证码
+
+    /**
+     * 发送验证码
+     * @param Request $request
+     * @return \think\response\Json
+     * @throws \think\db\exception\DataNotFoundException
+     * @throws \think\db\exception\ModelNotFoundException
+     * @throws \think\exception\DbException
+     */
     public function sendVCode(Request $request){
         $User = new User();
         if($User->findByPhone($request->phone)){
