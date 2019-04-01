@@ -34,8 +34,8 @@ class Index extends Controller
     public function getMerchant(Request $request){
         if ($request->isGet()) {
             $Market = new Market();
-            $phone=$request->param('phone');
-            return $Market->findOfPhone($phone);
+            $user_id=$request->param('user_id');
+            return $Market->findOfPhone($user_id);
         }
         return config('PARAMS_ERROR');
     }

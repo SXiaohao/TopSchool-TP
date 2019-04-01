@@ -26,21 +26,24 @@ class Market extends Model
     {
         if ($this->save(['user_id' => $market->user_id,
             'market_name' => $market->market_name,
-            'billboard' => $market->billboard,
             'market_school' => $market->market_school,
             'dorm_tower' => $market->dorm_tower,
             'dorm_num' => $market->dorm_num,
             'type' => $market->type,
-            'add_date' => date('Y-m-d H:i:s', time()),
-            'notice' => implode("|", $market->notice)])) {
+            'add_date' => date('Y-m-d H:i:s', time())]
+            )) {
             return ['status' => 200, 'msg' => '注册成功！！'];
         }
         return ['status' => 400, 'msg' => '注册失败！！'];
     }
 
-    public function findOfPhone($phone)
+    public function findOfPhone($id)
     {
-        return Db::table('ym_user')->where(['phone'=>$phone])->value('merchant');
+       $merchant= Db::table('ym_user')->where(['user_id'=>$id])->value('merchant');
+        if ($merchant>=0){
+            return['status'=>200,'msg'=>'查询成功！！','merchant'=>$merchant];
+        }
+        return['status'=>400,'msg'=>'查询失败！！','merchant'=>$merchant];
     }
 
     /**
