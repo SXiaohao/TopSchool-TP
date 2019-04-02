@@ -5,6 +5,7 @@ namespace app\pay\controller;
 
 
 use app\pay\model\Order;
+use app\pay\model\OrderItem;
 use think\Controller;
 use think\Request;
 
@@ -17,6 +18,16 @@ class CreateOrder extends Controller
             $buy_id = $request->param('user_id');
             $order = new Order();
             return $order->createOrder($itemList, $buy_id);
+        }
+        return config('PARAMS_ERROR');
+    }
+
+    public function select(Request $request)
+    {
+        if ($request->isPost()) {
+            $order_id = $request->param('order_id');
+            $order_item = new OrderItem();
+            return $order_item->getItemList($order_id);
         }
         return config('PARAMS_ERROR');
     }

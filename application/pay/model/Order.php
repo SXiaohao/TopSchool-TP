@@ -30,7 +30,8 @@ class Order extends Model
                     ->value('price');
                 //添加order_item表数据
                 Db::table('ym_order_item')->insert(['order_id' => $order_id, 'item_count' => $item["count"],
-                    'item_price' => $price, 'item_amount' => $price * $item["count"], 'create_time' => $create_time]);
+                    'item_name' => $item["title"], 'item_img' => $item["img"], 'item_price' => $price,
+                    'item_amount' => $price * $item["count"], 'create_time' => $create_time]);
                 $real_price += $price * $item["count"];
             }
             //更新order表订单金额
@@ -44,7 +45,9 @@ class Order extends Model
                 return ['status' => 400, 'msg' => '服务器异常！'];
             }
         } catch (PDOException $e) {
+            var_dump($this->getLastSql());
         } catch (Exception $e) {
+            var_dump($this->getLastSql());
         }
         return ['status' => 400, 'msg' => '参数错误！'];
     }
@@ -62,7 +65,7 @@ class Order extends Model
     public function pay($order_id, $remark)
     {
         //查询订单信息
-        $order_info = Db::table('ym_order')->where($order_id)->find();
+        $order_info = Db::table('ym_order')->where(['order_id'=>$order_id])->find();
         //获取订单号
         $out_trade_no = $order_info["out_trade_no"];
         //获取支付金额
@@ -70,7 +73,7 @@ class Order extends Model
         //异步回调地址
         $url = config('local_path') . '/pay/alipay/alipaynotify';
 
-        $array = alipay('源梦网络科技', $money, $out_trade_no, $url);
+        $array = alipay('源梦网络', $money, $out_trade_no, $url);
 
         if ($array) {
             //更新order表订单备注
