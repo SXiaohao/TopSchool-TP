@@ -20,6 +20,9 @@ class Market extends Model
      * 注册超市
      * @param $market
      * @return mixed
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function regMarket($market)
     {
@@ -27,7 +30,7 @@ class Market extends Model
             return config('NOT_SUPPORTED');
         }
         $user_id = $market->user_id;
-        if (Db::table('ym_market')->insert(['user_id' => $user_id])) {
+        if (Db::table('ym_market')->select(['user_id' => $user_id])) {
             return ['status' => 400, 'msg' => '用户已注册！！'];
         }
         if ($this->save(['user_id' => $user_id,

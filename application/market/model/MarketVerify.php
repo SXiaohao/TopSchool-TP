@@ -13,23 +13,21 @@ class MarketVerify extends Model
 {
     /**
      * 获取图片路径
-     * @param $type
-     * @param $file
+     * @param $card_front
+     * @param $card_back
+     * @param $student_card
      * @return array
      */
-    public function getImgPath($type, $file)
+    public function getImgPath($card_front, $card_back, $student_card)
     {
-        switch ($type) {
-            case "1":
-                return $this->uploadImg($file, 'card_front');
-
-            case "2":
-                return $this->uploadImg($file, 'card_back');
-
-            case "3":
-                return $this->uploadImg($file, 'student_card');
-
+        if ($card_front!= null) {
+            return $this->uploadImg($card_front, 'card_front');
+        } elseif ($card_back != null) {
+            return $this->uploadImg($card_back, 'card_back');
+        } elseif ($student_card != null) {
+            return $this->uploadImg($student_card, 'student_card');
         }
+
         return ['status' => 400,
             'msg' => '上传失败！！'];
     }
@@ -39,7 +37,8 @@ class MarketVerify extends Model
      * @param $request
      * @return array
      */
-    public function insertInfo($request)
+    public
+    function insertInfo($request)
     {
         $status = Db::table('ym_market_verify')
             ->insert(['user_id' => $request->user_id,

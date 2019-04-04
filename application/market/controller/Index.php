@@ -35,10 +35,11 @@ class Index extends Controller
     public function upload(Request $request)
     {
         if ($request->isPost()) {
-            $file = $request->param('file');
-            $type = $request->param('type');
+            $card_front = $request->file('card_front');
+            $card_back=$request->file('card_back');
+            $student_card=$request->file('student_card');
             $marketVerify = new MarketVerify();
-            return $marketVerify->getImgPath($file, $type);
+            return $marketVerify->getImgPath($card_front,$card_back,$student_card);
         }
         return config('PARAMS_ERROR');
     }
@@ -48,7 +49,7 @@ class Index extends Controller
      * @param Request $request
      * @return array|mixed
      */
-    public function verify(Request $request)
+    public function insertInfo(Request $request)
     {
         if ($request->isPost()) {
             $marketVerify = new MarketVerify();
