@@ -32,6 +32,7 @@ class Confession extends Model
                 ->table(['ym_user', 'ym_confession', 'ym_confession_image'])
                 ->where('ym_confession.user_id=ym_user.user_id')
                 ->where('ym_confession.article_id=ym_confession_image.article_id')
+                ->where('ym_confession.status=1')
                 ->group('ym_confession.article_id')
                 ->order('ym_confession.release_time', 'DESC')
                 ->page($page, 20)

@@ -6,6 +6,7 @@ namespace app\pay\controller;
 
 use app\pay\model\Order;
 use think\Controller;
+use think\Db;
 use think\Request;
 
 class Alipay extends Controller
@@ -44,22 +45,38 @@ class Alipay extends Controller
         //交易状态
         $trade_status = input('trade_status');
 
+        $pay_amount = input('total_amount');
+
+
         if ($trade_status == 'TRADE_FINISHED' || $trade_status == 'TRADE_SUCCESS') {
 
             $data['trade_status'] = 1;
             $data['pay_status'] = 1;
             $data['trade_no'] = $trade_no;
             $data['pay_time'] = date('y-m-d H:i:s', time());
-            $result = db('order')->where(['out_trade_no' => $out_trade_no,])->update($data);//修改订单状态,支付宝单号到数据库
+            $data['pay_amount'] = $pay_amount;
+            $result = Db::table('ym_order')->where(['out_trade_no' => $out_trade_no,])->update($data);
 
             if ($result) {
-                return ['status' => 200, 'msg' => '成功！！'];
+                $real_price = Db::table('ym_order')->where(['out_trade_no' => $out_trade_no])
+                    ->value('real_price');
+                $market_id = Db::table('ym_order')->where(['out_trade_no' => $out_trade_no])
+                    ->value('market_id');
+                Db::table('ym_market')
+                    ->where('market_id', $market_id)
+                    ->setInc('balance', floatval($real_price));
+                echo 'success';
             } else {
-                return ['status' => 400, 'msg' => '失败！！'];
+                echo 'fail';
             }
-
         } else {
-            return ['status' => 400, 'msg' => '失败！！'];
+            $data['trade_status'] = 2;
+            $data['pay_status'] = 0;
+            $data['trade_no'] = $trade_no;
+            $data['pay_time'] = date('y-m-d H:i:s', time());
+            $data['pay_amount'] = 0.00;
+            Db::table('ym_order')->where(['out_trade_no' => $out_trade_no,])->update($data);
+            echo "fail";
         }
     }
 }

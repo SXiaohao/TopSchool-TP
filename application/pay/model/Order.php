@@ -23,7 +23,7 @@ class Order extends Model
             //创建订单
             $order_id = Db::table('ym_order')->insertGetId(['out_trade_no' => $out_trade_no,
                 'buyer_id' => $buyer_id, 'pay_type' => 1,
-                'create_time' => $create_time]);
+                'create_time' => $create_time, 'market_id' => $itemList[0]["market_id"]]);
             foreach ($itemList as $item) {
                 //商品单价
                 $price = Db::table('ym_product')->where(['id' => $item["id"]])
@@ -65,7 +65,7 @@ class Order extends Model
     public function pay($order_id, $remark)
     {
         //查询订单信息
-        $order_info = Db::table('ym_order')->where(['order_id'=>$order_id])->find();
+        $order_info = Db::table('ym_order')->where(['order_id' => $order_id])->find();
         //获取订单号
         $out_trade_no = $order_info["out_trade_no"];
         //获取支付金额

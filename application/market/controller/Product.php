@@ -19,21 +19,21 @@ class Product extends Controller
      */
     public function addProduct(Request $request)
     {
-        if($request->isGet()){
+        if ($request->isGet()) {
             return config('PARAMS_ERROR');
         }
         $Product = new \app\market\model\Product();
         return $Product->addProduct($request);
     }
 
-
     /**
      * 查找商品
      * @param Request $request
      * @return array|mixed
      */
-    public function schProduct(Request $request){
-        if($request->isGet()){
+    public function schProduct(Request $request)
+    {
+        if ($request->isGet()) {
             return config('PARAMS_ERROR');
         }
         $product = new \app\market\model\Product();
@@ -48,8 +48,9 @@ class Product extends Controller
      * @throws \think\Exception
      * @throws \think\exception\PDOException
      */
-    public function deleteProduct(Request $request){
-        if($request->isGet()){
+    public function deleteProduct(Request $request)
+    {
+        if ($request->isGet()) {
             return config('PARAMS_ERROR');
         }
         $product = new \app\market\model\Product();
@@ -62,8 +63,9 @@ class Product extends Controller
      * @param Request $request
      * @return mixed
      */
-    public function updateProduct(Request $request){
-        if($request->isGet()){
+    public function updateProduct(Request $request)
+    {
+        if ($request->isGet()) {
             return config('PARAMS_ERROR');
         }
         $title = $request->param('title');
@@ -75,10 +77,11 @@ class Product extends Controller
         return $product->updateProduct($title, $keywords, $desc, $price, $cost);
     }
 
-    public function select(Request $request){
-        if ($request->isGet()){
-            $market_id=$request->param('market_id');
-            $productcates=new \app\market\model\Productcates();
+    public function select(Request $request)
+    {
+        if ($request->isGet()) {
+            $market_id = $request->param('market_id');
+            $productcates = new \app\market\model\Productcates();
             return $productcates->getProductList($market_id);
         }
         return config('PARAMS_ERROR');

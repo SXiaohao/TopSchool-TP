@@ -16,7 +16,6 @@ class Market extends Model
 {
     const COUNT_OF_PAGE = 10;
 
-
     /**
      * 注册超市
      * @param $market
@@ -24,162 +23,39 @@ class Market extends Model
      */
     public function regMarket($market)
     {
-        if ($this->save(['user_id' => $market->user_id,
-            'market_name' => $market->market_name,
-            'market_school' => $market->market_school,
-            'dorm_tower' => $market->dorm_tower,
-            'dorm_num' => $market->dorm_num,
-            'type' => $market->type,
-            'add_date' => date('Y-m-d H:i:s', time())]
-            )) {
+        if (!checkToken($market->token, $market->phone)) {
+            return config('NOT_SUPPORTED');
+        }
+        $user_id = $market->user_id;
+        if (Db::table('ym_market')->insert(['user_id' => $user_id])) {
+            return ['status' => 400, 'msg' => '用户已注册！！'];
+        }
+        if ($this->save(['user_id' => $user_id,
+                'market_name' => $market->market_name,
+                'market_school' => $market->market_school,
+                'dorm_tower' => $market->dorm_tower,
+                'dorm_num' => $market->dorm_num,
+                'type' => $market->type,
+                'add_date' => date('Y-m-d H:i:s', time())]
+        )) {
             return ['status' => 200, 'msg' => '注册成功！！'];
         }
         return ['status' => 400, 'msg' => '注册失败！！'];
     }
 
-    public function findOfPhone($id)
-    {
-       $merchant= Db::table('ym_user')->where(['user_id'=>$id])->value('merchant');
-        if ($merchant>=0){
-            return['status'=>200,'msg'=>'查询成功！！','merchant'=>$merchant];
-        }
-        return['status'=>400,'msg'=>'查询失败！！','merchant'=>$merchant];
-    }
-
     /**
-     * 分页显示
-     * @param $page
+     * 通过手机号获取是否为商家
+     * @param $id
      * @return array
      */
-    public function findOfAll($page)
+    public function findOfPhone($id)
     {
-        try {
-            $Market = Db::field('*')
-                ->table('ym_market')
-                ->page($page, 10)
-                ->select();
-
-            for ($i = 0; $i < count($Market); $i++) {
-                $Market[$i]["notice"] = mb_strcut($Market[$i]["notice"], 0, 50) . '...';
-            }
-
-            return ['marketList' => $Market,
-                'totalPages' => ceil(Db::table('ym_market')->count('*') / Market::COUNT_OF_PAGE),
-                'status' => 200,
-                'msg' => "成功"];
-        } catch (DataNotFoundException $e) {
-            var_dump($this->getLastSql());
-        } catch (ModelNotFoundException $e) {
-            var_dump($this->getLastSql());
-        } catch (DbException $e) {
-            var_dump($this->getLastSql());
+        $merchant = Db::table('ym_user')->where(['user_id' => $id])->value('merchant');
+        if ($merchant >= 0) {
+            return ['status' => 200, 'msg' => '查询成功！！', 'merchant' => $merchant];
         }
-        return ['status' => 400,
-            'msg' => "查询失败"];
+        return ['status' => 400, 'msg' => '查询失败！！', 'merchant' => $merchant];
     }
-
-
-    /*
-     * 测试
-     */
-    public function schType($type, $market_school)
-    {
-        if ($type == "学校") {
-            try {
-                $Market = Db::field('*')
-                    ->table('ym_market')
-                    ->page($type, 10)
-                    ->select();
-
-
-                for ($i = 0; $i < count($Market); $i++) {
-                    $Market[$i]["notice"] = mb_strcut($Market[$i]["notice"], 0, 50) . '...';
-                }
-
-                return ['marketList' => $Market,
-                    'totalPages' => ceil(Db::table('ym_market')->count('*') / Market::COUNT_OF_PAGE),
-                    'status' => 200,
-                    'msg' => "成功"];
-            } catch (DataNotFoundException $e) {
-                var_dump($this->getLastSql());
-            } catch (ModelNotFoundException $e) {
-                var_dump($this->getLastSql());
-            } catch (DbException $e) {
-                var_dump($this->getLastSql());
-            }
-            return ['status' => 400,
-                'msg' => "查询失败"];
-        } elseif ($type == "星级") {
-            $Market = Db::query("SELECT * FROM `ym_market` WHERE market_school = '$market_school' ORDER BY star_level DESC ");
-
-
-            for ($i = 0; $i < count($Market); $i++) {
-                $Market[$i]["notice"] = mb_strcut($Market[$i]["notice"], 0, 50) . '...';
-            }
-
-            return ['marketList' => $Market,
-                'totalPages' => ceil(Db::table('ym_market')->count('*') / Market::COUNT_OF_PAGE),
-                'status' => 200,
-                'msg' => "成功"];
-        } elseif ($type == "评价") {
-
-        } elseif ($type == "超市") {
-            $Market = Db::query("SELECT * FROM `ym_market` WHERE market_school = '$market_school' AND type ='超市' ORDER BY star_level DESC ");
-
-
-            for ($i = 0; $i < count($Market); $i++) {
-                $Market[$i]["notice"] = mb_strcut($Market[$i]["notice"], 0, 50) . '...';
-            }
-
-            return ['marketList' => $Market,
-                'totalPages' => ceil(Db::table('ym_market')->count('*') / Market::COUNT_OF_PAGE),
-                'status' => 200,
-                'msg' => "成功"];
-        } elseif ($type == "外卖") {
-            $Market = Db::query("SELECT * FROM `ym_market` WHERE market_school = '$market_school' AND type ='外卖' ORDER BY star_level DESC ");
-
-
-            for ($i = 0; $i < count($Market); $i++) {
-                $Market[$i]["notice"] = mb_strcut($Market[$i]["notice"], 0, 50) . '...';
-            }
-
-            return ['marketList' => $Market,
-                'totalPages' => ceil(Db::table('ym_market')->count('*') / Market::COUNT_OF_PAGE),
-                'status' => 200,
-                'msg' => "成功"];
-
-        } elseif ($type == "水果") {
-            $Market = Db::query("SELECT * FROM `ym_market` WHERE market_school = '$market_school' AND type ='水果' ORDER BY star_level DESC ");
-
-
-            for ($i = 0; $i < count($Market); $i++) {
-                $Market[$i]["notice"] = mb_strcut($Market[$i]["notice"], 0, 50) . '...';
-            }
-
-            return ['marketList' => $Market,
-                'totalPages' => ceil(Db::table('ym_market')->count('*') / Market::COUNT_OF_PAGE),
-                'status' => 200,
-                'msg' => "成功"];
-
-
-        } elseif ($type == "其他") {
-            $Market = Db::query("SELECT * FROM `ym_market` WHERE market_school = '$market_school' AND type ='其他' ORDER BY star_level DESC ");
-
-
-            for ($i = 0; $i < count($Market); $i++) {
-                $Market[$i]["notice"] = mb_strcut($Market[$i]["notice"], 0, 50) . '...';
-            }
-
-            return ['marketList' => $Market,
-                'totalPages' => ceil(Db::table('ym_market')->count('*') / Market::COUNT_OF_PAGE),
-                'status' => 200,
-                'msg' => "成功"];
-
-        }
-
-
-    }
-
 
     /**
      * @param $page
@@ -198,11 +74,11 @@ class Market extends Model
         }
         if ($type == "全部") {
             $totalPages = ceil(Db::table('ym_market')
-                    ->where(['market_school' => $market_school])
+                    ->where(['market_school' => $market_school, 'status' => 1])
                     ->count('*') / Market::COUNT_OF_PAGE);
         } else {
             $totalPages = ceil(Db::table('ym_market')
-                    ->where(['market_school' => $market_school, 'type' => $type])
+                    ->where(['market_school' => $market_school, 'type' => $type, 'status' => 1])
                     ->count('*') / Market::COUNT_OF_PAGE);
         }
         try {
@@ -211,7 +87,7 @@ class Market extends Model
                     if ($type == "全部") {
                         $marketList = Db::table('ym_market')
                             ->field('*,star_level+reading_volume as num')
-                            ->where(['market_school' => $market_school])
+                            ->where(['market_school' => $market_school, 'status' => 1])
                             ->order('num', 'DESC')
                             ->order('sale_volume', $sale_volume)
                             ->page($page, 10)
@@ -223,7 +99,7 @@ class Market extends Model
                     } else {
                         $marketList = Db::table('ym_market')
                             ->field('*,star_level+reading_volume as num')
-                            ->where(['market_school' => $market_school, 'type' => $type])
+                            ->where(['market_school' => $market_school, 'type' => $type, 'status' => 1])
                             ->order('num', 'DESC')
                             ->order('sale_volume', $sale_volume)
                             ->page($page, 10)
@@ -237,7 +113,7 @@ class Market extends Model
                 case "星级":
                     if ($type == "全部") {
                         $marketList = Db::table('ym_market')
-                            ->where(['market_school' => $market_school])
+                            ->where(['market_school' => $market_school, 'status' => 1])
                             ->order('star_level', 'DESC')
                             ->order('sale_volume', $sale_volume)
                             ->page($page, 10)
@@ -247,7 +123,7 @@ class Market extends Model
                         }
                     } else {
                         $marketList = Db::table('ym_market')
-                            ->where(['market_school' => $market_school, 'type' => $type])
+                            ->where(['market_school' => $market_school, 'type' => $type, 'status' => 1])
                             ->order('star_level', 'DESC')
                             ->order('sale_volume', $sale_volume)
                             ->page($page, 10)
@@ -261,7 +137,7 @@ class Market extends Model
                 case "人气":
                     if ($type == "全部") {
                         $marketList = Db::table('ym_market')
-                            ->where(['market_school' => $market_school])
+                            ->where(['market_school' => $market_school, 'status' => 1])
                             ->order('reading_volume', 'DESC')
                             ->order('sale_volume', $sale_volume)
                             ->page($page, 10)
@@ -271,7 +147,7 @@ class Market extends Model
                         }
                     } else {
                         $marketList = Db::table('ym_market')
-                            ->where(['market_school' => $market_school, 'type' => $type])
+                            ->where(['market_school' => $market_school, 'type' => $type, 'status' => 1])
                             ->order('reading_volume', 'DESC')
                             ->order('sale_volume', $sale_volume)
                             ->page($page, 10)

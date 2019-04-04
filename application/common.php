@@ -175,7 +175,8 @@ function alipay($body, $total_amount, $out_trade_no, $notify_url)
     $arr['subject'] = '商品';
     $arr['out_trade_no'] = $out_trade_no;
     $arr['timeout_express'] = '30m';
-    $arr['total_amount'] = floatval($total_amount);
+    //floatval($total_amount)
+    $arr['total_amount'] = 0.01;
     $arr['product_code'] = 'QUICK_MSECURITY_PAY';
 
     $json = json_encode($arr);

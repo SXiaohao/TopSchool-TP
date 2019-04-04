@@ -6,6 +6,7 @@
 
 namespace app\market\controller;
 
+use app\market\model\MarketVerify;
 use think\Controller;
 use think\Request;
 use app\market\model\Market;
@@ -27,14 +28,45 @@ class Index extends Controller
     }
 
     /**
+     * 上传身份证 学生证图片
+     * @param Request $request
+     * @return array|mixed
+     */
+    public function upload(Request $request)
+    {
+        if ($request->isPost()) {
+            $file = $request->param('file');
+            $type = $request->param('type');
+            $marketVerify = new MarketVerify();
+            return $marketVerify->getImgPath($file, $type);
+        }
+        return config('PARAMS_ERROR');
+    }
+
+    /**
+     * 验证信息
+     * @param Request $request
+     * @return array|mixed
+     */
+    public function verify(Request $request)
+    {
+        if ($request->isPost()) {
+            $marketVerify = new MarketVerify();
+            return $marketVerify->insertInfo($request);
+        }
+        return config('PARAMS_ERROR');
+    }
+
+    /**
      * 获取是否为商家
      * @param Request $request
      * @return mixed
      */
-    public function getMerchant(Request $request){
+    public function getMerchant(Request $request)
+    {
         if ($request->isGet()) {
             $Market = new Market();
-            $user_id=$request->param('user_id');
+            $user_id = $request->param('user_id');
             return $Market->findOfPhone($user_id);
         }
         return config('PARAMS_ERROR');
@@ -54,10 +86,12 @@ class Index extends Controller
             $sale_volume = $request->param('sale_volume');
             $market_school = $request->param('market_school');
             $market = new Market();
-           return $market->getMarketList($page, $order, $type, $sale_volume, $market_school);
+            return $market->getMarketList($page, $order, $type, $sale_volume, $market_school);
         }
         return config('PARAMS_ERROR');
     }
+
+
 
     /**
      * 分页查询
