@@ -7,24 +7,31 @@
 namespace app\market\model;
 
 use think\Db;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\ModelNotFoundException;
+use think\exception\DbException;
 use think\Model;
 
 class Productcates extends Model
 {
-    //const COUNT_OF_PAGE = 10;
+
 
     /**
      *添加分类
-     * @param $productcates
-     * @return bool
+     * @param $catesList
+     * @param $market_id
+     * @return array
      */
-    public function addProductcates($productcates)
+    public function addProductcates($catesList, $market_id)
     {
-        $this->id = $productcates->id;   //id主键
-        $this->ord = $productcates->ord;  //排序
-        $this->title = $productcates->title;  //分类名称
-        $this->status = $productcates->status; //状态
-        return $this->save();
+        $ord = 1;
+        foreach ($catesList as $item) {
+            if (Db::table('ym_productcates')->insert(['ord' => $ord++,
+                    'title' => $item["title"], 'market_id' => $market_id]) < 1) {
+                return ['status' => 400, 'msg' => '添加失败！！'];
+            }
+        }
+        return ['status' => 200, 'msg' => '添加成功！！'];
     }
 
 
@@ -37,13 +44,6 @@ class Productcates extends Model
     {
         return Db::query("SELECT id,title FROM ym_productcates WHERE title = '$title'");
     }
-
-
-    /*
-     * SELECT ym_productcates.`title`,ym_product.`title`,ym_product.`pro_no`,ym_product.`keywords`,ym_product.`desc` FROM ym_productcates JOIN  ym_product
-ON ym_productcates.`id` = ym_product.`cid` WHERE ym_productcates.`title` = '零食'
-    根据类别查找商品
-     */
 
 
     /**
@@ -74,16 +74,6 @@ ON ym_productcates.id = ym_product.cid where ym_productcates.title = '$title'");
 
 
     /**
-     * 查找全部类别
-     * @return mixed
-     */
-    public function selectAlltype()
-    {
-        return Db::query('SELECT id,title FROM ym_productcates');
-    }
-
-
-    /**
      * 删除分类
      * @param $title
      * @return int
@@ -102,26 +92,44 @@ ON ym_productcates.id = ym_product.cid where ym_productcates.title = '$title'");
      * @throws \think\Exception
      * @throws \think\exception\PDOException
      */
-    public function updateProductcates($title,$newtitle)
+    public function updateProductcates($title, $newtitle)
     {
         return Db::table('ym_productcates')->where('title', $title)->update(['title' => $newtitle]);
     }
 
 
-
-     public function getProduct($market_id,$cateid)
+    /**
+     * 获取商品信息
+     * @param $market_id
+     * @param $cateid
+     * @return array
+     * @throws DataNotFoundException
+     * @throws ModelNotFoundException
+     * @throws DbException
+     */
+    public function getProduct($market_id, $cateid)
     {
-        return Db::table('ym_product')->where(['market_id' => $market_id,'cateid'=>$cateid])->select();
+        return Db::table('ym_product')->where(['market_id' => $market_id, 'cateid' => $cateid])->select();
     }
-    public function getProductList($market_id){
-        $cate=Db::table('ym_productcates')->where(['market_id'=>$market_id,'status'=>1])
-            ->order('ord','ASC')->select();
-        $cateproducts=null;
 
-        foreach ($cate as $value){
-            $cateproducts["cateproducts".$value["cateid"]]=$this->getProduct($value["market_id"],$value["cateid"]);
+    /**
+     * 获取商品列表
+     * @param $market_id
+     * @return array
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
+     */
+    public function getProductList($market_id)
+    {
+        $cate = Db::table('ym_productcates')->where(['market_id' => $market_id, 'status' => 1])
+            ->order('ord', 'ASC')->select();
+        $cateproducts = null;
+
+        foreach ($cate as $value) {
+            $cateproducts["cateproducts" . $value["cateid"]] = $this->getProduct($value["market_id"], $value["cateid"]);
         }
 
-        return ['status'=>200,'msg'=>'查询成功！！','allProduct'=>$cateproducts,'mainCate'=>$cate];
+        return ['status' => 200, 'msg' => '查询成功！！', 'allProduct' => $cateproducts, 'mainCate' => $cate];
     }
 }

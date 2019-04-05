@@ -20,7 +20,7 @@ class MarketVerify extends Model
      */
     public function getImgPath($card_front, $card_back, $student_card)
     {
-        if ($card_front!= null) {
+        if ($card_front != null) {
             return $this->uploadImg($card_front, 'card_front');
         } elseif ($card_back != null) {
             return $this->uploadImg($card_back, 'card_back');
@@ -40,6 +40,10 @@ class MarketVerify extends Model
     public
     function insertInfo($request)
     {
+        if (!checkToken($request->token, $request->phone)) {
+            return config('NOT_SUPPORTED');
+        }
+
         $status = Db::table('ym_market_verify')
             ->insert(['user_id' => $request->user_id,
                 'card_front' => $request->card_front,

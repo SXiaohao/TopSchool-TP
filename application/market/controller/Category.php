@@ -6,23 +6,29 @@
 
 namespace app\market\controller;
 
+use app\market\model\Productcates;
 use think\Controller;
+use think\Exception;
+use think\exception\PDOException;
 use think\Request;
 
-class Productcates extends Controller
+class Category extends Controller
 {
     /**
      * 添加分类
      * @param Request $request
      * @return bool|mixed
      */
-    public function addProductcates(Request $request)
+    public function add(Request $request)
     {
-        if ($request->isGet()) {
-            return config('PARAMS_ERROR');
+        if ($request->isPost()) {
+            $Productcates = new Productcates();
+            $catesList = $request->param('catesList');
+            $market_id = $request->param('market_id');
+            return $Productcates->addProductcates($catesList,$market_id);
         }
-        $Productcates = new \app\market\model\Productcates();
-        return $Productcates->addProductcates($request);
+        return config('PARAMS_ERROR');
+
     }
 
     /**
@@ -53,51 +59,22 @@ class Productcates extends Controller
         return $productsch->findType($request->param('title'));
     }
 
-    /**
-     * 查找全部类别
-     * @param Request $request
-     * @return mixed
-     */
-    public function selectAlltype(Request $request)
-    {
-        if ($request->isGet()) {
-            return config('PARAMS_ERROR');
-        }
-        $productselect = new \app\market\model\Productcates();
-        return $productselect->selectAlltype($request);
-    }
-
 
     /**
      * 删除商品类别
      * @param Request $request
      * @return int|mixed
-     * @throws \think\Exception
-     * @throws \think\exception\PDOException
+     * @throws Exception
+     * @throws PDOException
      */
     public function deleteProductcates(Request $request)
     {
         if ($request->isGet()) {
             return config('PARAMS_ERROR');
         }
-        $productselect = new \app\market\model\Productcates();
+        $productselect = new Productcates();
         return $productselect->deleteProductcates($request->param('title'));
     }
-
-    /**
-     * 修改商品类别
-     * @param Request $request
-     * @return mixed
-     */
-    public function updateProductcates(Request $request)
-    {
-        if ($request->isGet()) {
-            return config('PARAMS_ERROR');
-        }
-
-    }
-
-
 
 
 }

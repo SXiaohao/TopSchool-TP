@@ -7,7 +7,11 @@
 namespace app\market\controller;
 
 
+use app\market\model\Productcates;
 use think\Controller;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\ModelNotFoundException;
+use think\exception\DbException;
 use think\Request;
 
 class Product extends Controller
@@ -77,11 +81,19 @@ class Product extends Controller
         return $product->updateProduct($title, $keywords, $desc, $price, $cost);
     }
 
+    /**
+     * 查询商品列表
+     * @param Request $request
+     * @return array|mixed
+     * @throws DataNotFoundException
+     * @throws ModelNotFoundException
+     * @throws DbException
+     */
     public function select(Request $request)
     {
         if ($request->isGet()) {
             $market_id = $request->param('market_id');
-            $productcates = new \app\market\model\Productcates();
+            $productcates = new Productcates();
             return $productcates->getProductList($market_id);
         }
         return config('PARAMS_ERROR');
