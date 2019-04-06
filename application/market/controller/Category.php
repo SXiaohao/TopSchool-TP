@@ -25,7 +25,7 @@ class Category extends Controller
             $Productcates = new Productcates();
             $catesList = $request->param('catesList');
             $market_id = $request->param('market_id');
-            return $Productcates->addProductcates($catesList,$market_id);
+            return $Productcates->addProductcates($catesList, $market_id);
         }
         return config('PARAMS_ERROR');
 
@@ -36,29 +36,16 @@ class Category extends Controller
      * @param Request $request
      * @return mixed
      */
-    public function schProductcate(Request $request)
+    public function select(Request $request)
     {
         if ($request->isGet()) {
-            return config('PARAMS_ERROR');
+            $productcates = new Productcates();
+            $market_id = $request->param('market_id');
+            return $productcates->getCategory($market_id);
         }
-        $Productcates = new Productcates();
-        return $Productcates->schProductcate($request->param('title'));
-    }
+        return config('PARAMS_ERROR');
 
-    /**
-     * 根据类别查找商品
-     * @param Request $request
-     * @return array|mixed
-     */
-    public function findType(Request $request)
-    {
-        if ($request->isGet()) {
-            return config('PARAMS_ERROR');
-        }
-        $productsch = new Productcates();
-        return $productsch->findType($request->param('title'));
     }
-
 
     /**
      * 删除商品类别
@@ -67,7 +54,7 @@ class Category extends Controller
      * @throws Exception
      * @throws PDOException
      */
-    public function deleteProductcates(Request $request)
+    public function delete(Request $request)
     {
         if ($request->isGet()) {
             return config('PARAMS_ERROR');

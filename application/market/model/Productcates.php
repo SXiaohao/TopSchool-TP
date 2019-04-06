@@ -9,7 +9,9 @@ namespace app\market\model;
 use think\Db;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\ModelNotFoundException;
+use think\Exception;
 use think\exception\DbException;
+use think\exception\PDOException;
 use think\Model;
 
 class Productcates extends Model
@@ -37,48 +39,32 @@ class Productcates extends Model
 
     /**
      * 查找类别
-     * @param $title
+     * @param $market_id
      * @return mixed
      */
-    public function schProductcate($title)
-    {
-        return Db::query("SELECT id,title FROM ym_productcates WHERE title = '$title'");
-    }
-
-
-    /**
-     * 查找类别中的商品
-     * @param $title
-     * @return array
-     */
-    public function findType($title)
+    public function getCategory($market_id)
     {
         try {
-            $Productcates = Db::query("SELECT ym_productcates.id,ym_productcates.title,ym_product.title,ym_product.pro_no,ym_product.keywords,ym_product.desc FROM ym_productcates JOIN  ym_product
-ON ym_productcates.id = ym_product.cid where ym_productcates.title = '$title'");
-
-            return ['productcatesList' => $Productcates,
-                'status' => 200,
-                'msg' => "成功"];
+            $catesList = Db::table('ym_productcates')
+                ->where(['market_id' => $market_id, 'status' => 1])
+                ->select();
+            return ['msg' => '查询成功!!', 'status' => 400, 'catesList' => $catesList];
         } catch (DataNotFoundException $e) {
-            var_dump($this->getLastSql());
         } catch (ModelNotFoundException $e) {
-            var_dump($this->getLastSql());
         } catch (DbException $e) {
-            var_dump($this->getLastSql());
         }
-        return ['status' => 400,
-            'msg' => "查询失败"];
 
+        return ['msg' => '查询失败!!', 'status' => 400];
     }
+
 
 
     /**
      * 删除分类
      * @param $title
      * @return int
-     * @throws \think\Exception
-     * @throws \think\exception\PDOException
+     * @throws Exception
+     * @throws PDOException
      */
     public function deleteProductcates($title)
     {
@@ -89,8 +75,8 @@ ON ym_productcates.id = ym_product.cid where ym_productcates.title = '$title'");
      * 更改商品类别
      * @param $title
      * @return int|string
-     * @throws \think\Exception
-     * @throws \think\exception\PDOException
+     * @throws Exception
+     * @throws PDOException
      */
     public function updateProductcates($title, $newtitle)
     {

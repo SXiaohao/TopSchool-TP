@@ -5,7 +5,10 @@ namespace app\pay\model;
 
 
 use think\Db;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\ModelNotFoundException;
 use think\Exception;
+use think\exception\DbException;
 use think\exception\PDOException;
 use think\Model;
 
@@ -58,9 +61,9 @@ class Order extends Model
      * @return array
      * @throws Exception
      * @throws PDOException
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\ModelNotFoundException
-     * @throws \think\exception\DbException
+     * @throws DataNotFoundException
+     * @throws ModelNotFoundException
+     * @throws DbException
      */
     public function pay($order_id, $remark)
     {
@@ -89,5 +92,46 @@ class Order extends Model
         }
     }
 
+    /**
+     * 获取今、昨、7天、一个月总金额
+     * @param $user_id
+     * @return array
+     */
+    public function getAmount($user_id)
+    {
+        $market_id = Db::table('ym_market')->where('user_id', $user_id)->value('market_id');
+        try {
+            $today_amount = Db::field('Sum(real_price) AS amount')->table('ym_order')
+                ->where('to_days(pay_time) = to_days(now())')
+                ->where(['pay_status' => 1, 'market_id' => $market_id])
+                ->select()[0]["amount"];
+
+            $yestoday_amount = Db::field('Sum(real_price) AS amount')->table('ym_order')
+                ->where('TO_DAYS( NOW( ) ) - TO_DAYS( pay_time) = 1')
+                ->where(['pay_status' => 1, 'market_id' => $market_id])
+                ->select()[0]["amount"];
+
+            $week_amount = Db::field('Sum(real_price) AS amount')->table('ym_order')
+                ->where('YEARWEEK(date_format(pay_time,\'%Y-%m-%d\')) = YEARWEEK(now())')
+                ->where(['pay_status' => 1, 'market_id' => $market_id])
+                ->select()[0]["amount"];
+
+            $month_amount = Db::field('Sum(real_price) AS amount')->table('ym_order')
+                ->where('DATE_FORMAT( pay_time, \'%Y%m\' ) = DATE_FORMAT( CURDATE( ) , \'%Y%m\' )')
+                ->where(['pay_status' => 1, 'market_id' => $market_id])
+                ->select()[0]["amount"];
+
+            $balance = Db::table('ym_market')->where('user_id', $user_id)->value('balance');
+
+            return ['status' => 200, 'msg' => '查询成功！！',
+                'today_amount' => $today_amount,
+                'yestoday_amount' => $yestoday_amount,
+                'week_amount' => $week_amount,
+                'month_amount' => $month_amount,
+                'balance' => $balance];
+        } catch (Exception $exception) {
+        }
+        return ['status' => 400, 'msg' => '查询失败！！',];
+    }
 
 }

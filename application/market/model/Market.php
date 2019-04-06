@@ -30,7 +30,7 @@ class Market extends Model
             return config('NOT_SUPPORTED');
         }
         $user_id = $market->user_id;
-        if (Db::table('ym_market')->select(['user_id' => $user_id])) {
+        if (Db::table('ym_market')->where(['user_id' => $user_id])->select() != null) {
             return ['status' => 400, 'msg' => '用户已注册！！'];
         }
         if ($this->save(['user_id' => $user_id,
