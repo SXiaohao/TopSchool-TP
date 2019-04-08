@@ -21,13 +21,29 @@ class Product extends Controller
      * @param Request $request
      * @return bool|mixed
      */
-    public function addProduct(Request $request)
+    public function add(Request $request)
     {
-        if ($request->isGet()) {
-            return config('PARAMS_ERROR');
+        if ($request->isPost()) {
+            $Product = new \app\market\model\Product();
+            return $Product->addProduct($request);
+
         }
-        $Product = new \app\market\model\Product();
-        return $Product->addProduct($request);
+        return config('PARAMS_ERROR');
+    }
+
+    /**
+     * 上传商品图片
+     * @param Request $request
+     * @return array|mixed
+     */
+    public function upload(Request $request)
+    {
+        if ($request->isPost()) {
+            $file = $request->file('file');
+            $Product = new \app\market\model\Product();
+            return $Product->uploadImg($file);
+        }
+        return config('PARAMS_ERROR');
     }
 
     /**
@@ -44,22 +60,6 @@ class Product extends Controller
         return $product->schProduct($request->param('title'));
     }
 
-
-    /**
-     * 删除商品
-     * @param Request $request
-     * @return int|mixed
-     * @throws \think\Exception
-     * @throws \think\exception\PDOException
-     */
-    public function deleteProduct(Request $request)
-    {
-        if ($request->isGet()) {
-            return config('PARAMS_ERROR');
-        }
-        $product = new \app\market\model\Product();
-        return $product->deleteProduct($request->param('title'));
-    }
 
 
     /**

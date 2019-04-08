@@ -42,7 +42,7 @@ class Order extends Model
                 ->where('order_id', $order_id)
                 ->update(['real_price' => $real_price]);
             if ($status > 0) {
-                return ['order_id' => $order_id, 'real_price' => $real_price,
+                return ['order_id' => $order_id, 'real_price' => round($real_price,2),
                     'out_trade_no' => $out_trade_no, 'status' => 200, 'msg' => '成功！！'];
             } else {
                 return ['status' => 400, 'msg' => '服务器异常！'];
@@ -94,12 +94,11 @@ class Order extends Model
 
     /**
      * 获取今、昨、7天、一个月总金额
-     * @param $user_id
+     * @param $market_id
      * @return array
      */
-    public function getAmount($user_id)
+    public function getAmount($market_id)
     {
-        $market_id = Db::table('ym_market')->where('user_id', $user_id)->value('market_id');
         try {
             $today_amount = Db::field('Sum(real_price) AS amount')->table('ym_order')
                 ->where('to_days(pay_time) = to_days(now())')
@@ -121,14 +120,14 @@ class Order extends Model
                 ->where(['pay_status' => 1, 'market_id' => $market_id])
                 ->select()[0]["amount"];
 
-            $balance = Db::table('ym_market')->where('user_id', $user_id)->value('balance');
+            $balance = Db::table('ym_market')->where('market_id', $market_id)->value('balance');
 
             return ['status' => 200, 'msg' => '查询成功！！',
-                'today_amount' => $today_amount,
-                'yestoday_amount' => $yestoday_amount,
-                'week_amount' => $week_amount,
-                'month_amount' => $month_amount,
-                'balance' => $balance];
+                'today_amount' => floatval($today_amount),
+                'yestoday_amount' => floatval($yestoday_amount),
+                'week_amount' => floatval($week_amount),
+                'month_amount' => floatval($month_amount),
+                'balance' => floatval($balance)];
         } catch (Exception $exception) {
         }
         return ['status' => 400, 'msg' => '查询失败！！',];

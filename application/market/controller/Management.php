@@ -17,9 +17,9 @@ class Management extends Controller
     public function amount(Request $request)
     {
         if ($request->isGet()) {
-            $user_id = $request->param('user_id');
+            $market_id = $request->param('market_id');
             $order = new Order();
-            return $order->getAmount($user_id);
+            return $order->getAmount($market_id);
         }
         return config('PARAMS_ERROR');
 

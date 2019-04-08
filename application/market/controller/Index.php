@@ -10,6 +10,7 @@ use app\market\model\MarketVerify;
 use think\Controller;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\ModelNotFoundException;
+use think\Exception;
 use think\exception\DbException;
 use think\Request;
 use app\market\model\Market;
@@ -21,8 +22,9 @@ class Index extends Controller
      * @param Request $request
      * @return mixed
      * @throws DataNotFoundException
-     * @throws ModelNotFoundException
      * @throws DbException
+     * @throws ModelNotFoundException
+     * @throws Exception
      */
     public function regMarket(Request $request)
     {

@@ -9,6 +9,7 @@ namespace app\market\model;
 use think\Db;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\ModelNotFoundException;
+use think\Exception;
 use think\exception\DbException;
 use think\Model;
 
@@ -23,6 +24,7 @@ class Market extends Model
      * @throws DataNotFoundException
      * @throws DbException
      * @throws ModelNotFoundException
+     * @throws Exception
      */
     public function regMarket($market)
     {
@@ -31,7 +33,18 @@ class Market extends Model
         }
         $user_id = $market->user_id;
         if (Db::table('ym_market')->where(['user_id' => $user_id])->select() != null) {
-            return ['status' => 400, 'msg' => '用户已注册！！'];
+            $status = Db::table('ym_market')->where(['user_id' => $user_id])
+                ->update(['user_id' => $user_id,
+                    'market_name' => $market->market_name,
+                    'market_school' => $market->market_school,
+                    'dorm_tower' => $market->dorm_tower,
+                    'dorm_num' => $market->dorm_num,
+                    'type' => $market->type,
+                    'add_date' => date('Y-m-d H:i:s', time())]);
+            if ($status > 0) {
+                return ['status' => 200, 'msg' => '更新成功！！'];
+            }
+            return ['status' => 400, 'msg' => '更新失败！！'];
         }
         if ($this->save(['user_id' => $user_id,
                 'market_name' => $market->market_name,
@@ -54,10 +67,11 @@ class Market extends Model
     public function findOfPhone($id)
     {
         $merchant = Db::table('ym_user')->where(['user_id' => $id])->value('merchant');
+        $market_id = Db::table('ym_market')->where(['user_id' => $id])->value('market_id');
         if ($merchant >= 0) {
-            return ['status' => 200, 'msg' => '查询成功！！', 'merchant' => $merchant];
+            return ['status' => 200, 'msg' => '查询成功！！', 'merchant' => $merchant, 'market_id' => $market_id];
         }
-        return ['status' => 400, 'msg' => '查询失败！！', 'merchant' => $merchant];
+        return ['status' => 400, 'msg' => '查询失败！！', 'merchant' => $merchant, 'market_id' => $market_id];
     }
 
     /**
