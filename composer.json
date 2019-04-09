@@ -24,7 +24,8 @@
         "alibabacloud/client": "^1.0",
       "ext-mbstring": "*",
       "ext-json": "*",
-        "endroid/qrcode": "^3.5"
+        "endroid/qrcode": "^3.5",
+      "ext-curl": "*"
     },
     "autoload": {
         "psr-4": {

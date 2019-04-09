@@ -16,20 +16,7 @@ use think\Request;
 
 class Product extends Controller
 {
-    /**
-     * 添加商品
-     * @param Request $request
-     * @return bool|mixed
-     */
-    public function add(Request $request)
-    {
-        if ($request->isPost()) {
-            $Product = new \app\market\model\Product();
-            return $Product->addProduct($request);
 
-        }
-        return config('PARAMS_ERROR');
-    }
 
     /**
      * 上传商品图片
@@ -46,40 +33,6 @@ class Product extends Controller
         return config('PARAMS_ERROR');
     }
 
-    /**
-     * 查找商品
-     * @param Request $request
-     * @return array|mixed
-     */
-    public function schProduct(Request $request)
-    {
-        if ($request->isGet()) {
-            return config('PARAMS_ERROR');
-        }
-        $product = new \app\market\model\Product();
-        return $product->schProduct($request->param('title'));
-    }
-
-
-
-    /**
-     * 修改商品
-     * @param Request $request
-     * @return mixed
-     */
-    public function updateProduct(Request $request)
-    {
-        if ($request->isGet()) {
-            return config('PARAMS_ERROR');
-        }
-        $title = $request->param('title');
-        $keywords = $request->param('keyword');
-        $desc = $request->param('desc');
-        $price = $request->param('price');
-        $cost = $request->param('cost');
-        $product = new \app\market\model\Product();
-        return $product->updateProduct($title, $keywords, $desc, $price, $cost);
-    }
 
     /**
      * 查询商品列表

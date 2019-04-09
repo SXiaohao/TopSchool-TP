@@ -12,6 +12,7 @@ use think\db\exception\DataNotFoundException;
 use think\db\exception\ModelNotFoundException;
 use think\Exception;
 use think\exception\DbException;
+use think\exception\PDOException;
 use think\Model;
 
 class Product extends Model
@@ -39,36 +40,32 @@ class Product extends Model
 
 
     /**
-     * 准确搜索商品
-     * @param $title
-     * @return array
-     */
-    public function schProduct($title)
-    {
-
-        return Db::query("SELECT ym_product.id,ym_product.title,ym_product.img,ym_product.price FROM ym_product WHERE title='$title'");
-
-    }
-
-    /**
      * 删除商品
      * @param $token
+     * @param $phone
      * @param $user_id
      * @param $product_id
-     * @return void
+     * @return array
      */
-    public function deleteProduct($token,$user_id,$product_id)
+    public function delProduct($token, $phone, $user_id, $product_id)
     {
-
+        if (!checkToken($token,$phone)){
+            return config('NOT_SUPPORTED');
+        }
+        try {
+            $market_id = Db::table('ym_market')->where('user_id', $user_id)->value('market_id');
+            $product_market_id = Db::table('ym_product')->where('id', $product_id)->value('market_id');
+            if ($market_id == $product_market_id) {
+                Db::table('ym_product')->where('id', $product_id)->delete();
+                return ['status' => 200, 'msg' => '删除成功！！'];
+            }
+            return ['status' => 400, 'msg' => '删除失败！！'];
+        } catch (PDOException $e) {
+        } catch (Exception $e) {
+        }
+        return ['status' => 400, 'msg' => '删除失败！！'];
     }
 
-    /*
-     * 修改商品
-     */
-    public function updateProduct($title, $keywords, $desc, $price, $cost)
-    {
-        return Db::table('ym_product')->where('title', $title)->update(['keywords' => $keywords, 'desc' => $desc, 'price' => $price, 'cost' => $cost]);
-    }
 
     /**
      * 上传图片

@@ -11,6 +11,7 @@ use think\Request;
 class Management extends Controller
 {
     /**
+     * 金额
      * @param Request $request
      * @return array|mixed
      */
@@ -23,5 +24,28 @@ class Management extends Controller
         }
         return config('PARAMS_ERROR');
 
+    }
+
+    public function productAdd(Request $request)
+    {
+        if ($request->isPost()) {
+            $product = new \app\market\model\Product();
+            return $product->addProduct($request);
+
+        }
+        return config('PARAMS_ERROR');
+    }
+
+    public function productDel(Request $request)
+    {
+        if ($request->isPost()){
+            $token=$request->param('token');
+            $phone=$request->param('phone');
+            $user_id=$request->param('user_id');
+            $product_id=$request->param('id');
+            $product=new \app\market\model\Product();
+            return $product->delProduct($token,$phone,$user_id,$product_id);
+        }
+        return config('PARAMS_ERROR');
     }
 }
