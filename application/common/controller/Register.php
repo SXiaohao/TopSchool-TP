@@ -37,7 +37,7 @@ class Register extends Controller
             return json(['status' => 201, 'msg' => '该账号已注册,请直接登录!']);
         } else {
             $code = mt_rand(100000, 999999);
-            $str = "【浩创空间】您的验证码为{1}，请于{2}分钟内正确输入，如非本人操作，请忽略此短信。";
+            $str = "【源梦科技】您的验证码为{1}，请于{2}分钟内正确输入，如非本人操作，请忽略此短信。";
             $md = new Miaodi();
             $result = $md->sendSMS($request->phone, $str, [$code, '5']);
             //$result = sendSms('SMS_159840024', $request->phone, $code);

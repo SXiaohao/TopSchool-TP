@@ -8,8 +8,7 @@ namespace app\market\controller;
 
 use app\market\model\Productcates;
 use think\Controller;
-use think\Exception;
-use think\exception\PDOException;
+use think\Db;
 use think\Request;
 
 class Category extends Controller
@@ -48,20 +47,18 @@ class Category extends Controller
     }
 
     /**
-     * 删除商品类别
+     * 更新分类
      * @param Request $request
-     * @return int|mixed
-     * @throws Exception
-     * @throws PDOException
+     * @return array
      */
-    public function delete(Request $request)
+    public function update(Request $request)
     {
-        if ($request->isGet()) {
-            return config('PARAMS_ERROR');
+        if ($request->isPost()) {
+            $productcates = new Productcates();
+            $cateList = $request->param('cateList');
+            return $productcates->updateCategory($cateList);
         }
-        $productselect = new Productcates();
-        return $productselect->deleteProductcates($request->param('title'));
+        return config('PARAMS_ERROR');
     }
-
 
 }

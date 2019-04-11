@@ -13,6 +13,7 @@ use think\db\exception\ModelNotFoundException;
 use think\Exception;
 use think\exception\DbException;
 use think\exception\PDOException;
+use think\Image;
 use think\Model;
 
 class Product extends Model
@@ -20,24 +21,54 @@ class Product extends Model
 
     /**
      * 添加商品
-     * @param $productList
-     * @return bool
+     * @param $product
+     * @return array
      */
-    public function addProduct($productList)
+    public function addProduct($product)
     {
-        foreach ($productList as $item) {
-            Db::table('ym_product')
-                ->insert(['market_id' => $item["market_id"],
-                    'cateid' => $item["cateid"],
-                    'title' => $item["title"],
-                    'keywords' => $item["keyword"],
-                    'img' => $item["img"],
-                    'price' => $item["price"],
-                    'cost' => $item["cost"]]);
+        if (!checkToken($product->token, $product->phone)) {
+            return config('NOT_SUPPORTED');
         }
-        return $this->save();
+        $status = Db::table('ym_product')
+            ->insert(['market_id' => $product->market_id,
+                'cateid' => $product->cateid,
+                'title' => $product->title,
+                'keywords' => $product->keywords,
+                'img' => $product->img,
+                'price' => $product->price,
+                'cost' => $product->cost]);
+        if ($status) {
+            return ['status' => 200, 'msg' => '添加成功！！'];
+        }
+        return ['status' => 200, 'msg' => '添加失败！！'];
     }
 
+    /**
+     * 更新商品
+     * @param $product
+     * @return array
+     * @throws Exception
+     * @throws PDOException
+     */
+    public function updateProduct($product)
+    {
+        /* if (!checkToken($product->token,$product->phone)){
+             return config('NOT_SUPPORTED');
+         }*/
+        $status = Db::table('ym_product')
+            ->where('id', $product->product_id)
+            ->update(['market_id' => $product->market_id,
+                'cateid' => $product->cateid,
+                'title' => $product->title,
+                'keywords' => $product->keywords,
+                'img' => $product->img,
+                'price' => $product->price,
+                'cost' => $product->cost]);
+        if ($status) {
+            return ['status' => 200, 'msg' => '更新成功！！'];
+        }
+        return ['status' => 200, 'msg' => '更新失败！！'];
+    }
 
     /**
      * 删除商品
@@ -49,7 +80,7 @@ class Product extends Model
      */
     public function delProduct($token, $phone, $user_id, $product_id)
     {
-        if (!checkToken($token,$phone)){
+        if (!checkToken($token, $phone)) {
             return config('NOT_SUPPORTED');
         }
         try {
@@ -74,8 +105,9 @@ class Product extends Model
      */
     public function uploadImg($file)
     {
+        var_dump($file);
         //上传图片并返回访问路径
-        $info = $file->validate(['ext', 'jpg,jpeg,png,gif'])->move('../public/static/product');
+        $info = $file->validate(['size' => 1048576, 'ext', 'jpg,jpeg,png,gif'])->move('../public/static/product');
         if ($info) {
             $getSaveName = str_replace("\\", "/", $info->getSaveName());
             $imagePath = config('local_path') . "/static/product/" . $getSaveName;
@@ -87,6 +119,19 @@ class Product extends Model
         return ['status' => 200,
             'msg' => '上传成功！',
             'imagePath' => $imagePath];
+    }
+
+    public function selProduct($product_id)
+    {
+        try {
+            $product = Db::table('ym_product')->where('id', $product_id)->select();
+            if ($product != null) {
+                return ['status' => 200, 'msg' => '查询成功！！', 'product' => $product[0]];
+            }
+            return ['status' => 400, 'msg' => '查询失败！！'];
+        } catch (Exception $e) {
+        }
+        return ['status' => 400, 'msg' => '查询失败！！'];
     }
 
 }

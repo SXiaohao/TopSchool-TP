@@ -17,6 +17,25 @@ use think\Model;
 class Productcates extends Model
 {
 
+    /**
+     * 查找类别
+     * @param $market_id
+     * @return mixed
+     */
+    public function getCategory($market_id)
+    {
+        try {
+            $catesList = Db::table('ym_productcates')
+                ->where(['market_id' => $market_id])
+                ->select();
+            return ['msg' => '查询成功!!', 'status' => 200, 'catesList' => $catesList];
+        } catch (DataNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
+        } catch (DbException $e) {
+        }
+
+        return ['msg' => '查询失败!!', 'status' => 400];
+    }
 
     /**
      *添加分类
@@ -36,66 +55,30 @@ class Productcates extends Model
         return ['status' => 200, 'msg' => '添加成功！！'];
     }
 
-
     /**
-     * 查找类别
-     * @param $market_id
-     * @return mixed
-     */
-    public function getCategory($market_id)
-    {
-        try {
-            $catesList = Db::table('ym_productcates')
-                ->where(['market_id' => $market_id, 'status' => 1])
-                ->select();
-            return ['msg' => '查询成功!!', 'status' => 400, 'catesList' => $catesList];
-        } catch (DataNotFoundException $e) {
-        } catch (ModelNotFoundException $e) {
-        } catch (DbException $e) {
-        }
-
-        return ['msg' => '查询失败!!', 'status' => 400];
-    }
-
-
-
-    /**
-     * 删除分类
-     * @param $title
-     * @return int
-     * @throws Exception
-     * @throws PDOException
-     */
-    public function deleteProductcates($title)
-    {
-        return Db::table('ym_productcates')->where('title', $title)->delete();
-    }
-
-    /**
-     * 更改商品类别
-     * @param $title
-     * @return int|string
-     * @throws Exception
-     * @throws PDOException
-     */
-    public function updateProductcates($title, $newtitle)
-    {
-        return Db::table('ym_productcates')->where('title', $title)->update(['title' => $newtitle]);
-    }
-
-
-    /**
-     * 获取商品信息
-     * @param $market_id
-     * @param $cateid
+     * 修改分类
+     * @param $cateList
      * @return array
-     * @throws DataNotFoundException
-     * @throws ModelNotFoundException
-     * @throws DbException
      */
-    public function getProduct($market_id, $cateid)
+    public function updateCategory($cateList)
     {
-        return Db::table('ym_product')->where(['market_id' => $market_id, 'cateid' => $cateid])->select();
+        $market_id = $cateList[0]["market_id"];
+        if ($market_id == null) {
+            return ['status' => 400, 'msg' => '超市id为空！！'];
+        }
+        try {
+            Db::table('ym_Productcates')->where('market_id', $market_id)->delete();
+            foreach ($cateList as $item) {
+                Db::table('ym_Productcates')
+                    ->insert(['ord' => $item["ord"],
+                        'title' => $item["title"],
+                        'market_id' => $item["market_id"]]);
+            }
+            return ['status' => 200, 'msg' => '更新成功！！'];
+        } catch (PDOException $e) {
+        } catch (Exception $e) {
+        }
+        return ['status' => 400, 'msg' => '更新失败！！'];
     }
 
     /**
@@ -108,14 +91,28 @@ class Productcates extends Model
      */
     public function getProductList($market_id)
     {
-        $cate = Db::table('ym_productcates')->where(['market_id' => $market_id, 'status' => 1])
+        $cate = Db::table('ym_productcates')->where(['market_id' => $market_id])
             ->order('ord', 'ASC')->select();
         $cateproducts = null;
 
         foreach ($cate as $value) {
             $cateproducts["cateproducts" . $value["cateid"]] = $this->getProduct($value["market_id"], $value["cateid"]);
         }
-
         return ['status' => 200, 'msg' => '查询成功！！', 'allProduct' => $cateproducts, 'mainCate' => $cate];
     }
+
+    /**
+     * 获取商品信息
+     * @param $market_id
+     * @param $cateid
+     * @return array
+     * @throws DataNotFoundException
+     * @throws ModelNotFoundException
+     * @throws DbException
+     */
+    private function getProduct($market_id, $cateid)
+    {
+        return Db::table('ym_product')->where(['market_id' => $market_id, 'cateid' => $cateid])->select();
+    }
+
 }
