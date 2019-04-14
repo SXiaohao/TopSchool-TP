@@ -187,18 +187,50 @@ class Order extends Model
     /**
      * 定单查询
      * @param $market_id
+     * @param $phone
+     * @param $token
      * @return array
      */
-    public function select($market_id)
+    public function selectOrder($market_id, $phone, $token)
     {
+        if (!checkToken($token, $phone)) {
+            return config('NOT_SUPPORTED');
+        }
         try {
-            $orderList = Db::table('order')
+            $orderList = Db::table('ym_order')
                 ->where('market_id', $market_id)
                 ->where('pay_status', 1)
                 ->select();
             return ['status' => 200,
                 'msg' => '查询成功！！',
                 'orderList' => $orderList];
+        } catch (DataNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
+        } catch (DbException $e) {
+        }
+        return ['status' => 200,
+            'msg' => '查询失败！！'];
+    }
+
+    /**
+     * 定单详情查询
+     * @param $order_id
+     * @param $phone
+     * @param $token
+     * @return array
+     */
+    public function selectOrderItem($order_id, $phone, $token)
+    {
+        if (!checkToken($token, $phone)) {
+            return config('NOT_SUPPORTED');
+        }
+        try {
+            $orderItemList = Db::table('ym_order_item')
+                ->where('order_id', $order_id)
+                ->select();
+            return ['status' => 200,
+                'msg' => '查询成功！！',
+                'orderItemList' => $orderItemList];
         } catch (DataNotFoundException $e) {
         } catch (ModelNotFoundException $e) {
         } catch (DbException $e) {

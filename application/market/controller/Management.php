@@ -115,10 +115,29 @@ class Management extends Controller
      */
     public function order(Request $request)
     {
-        if ($request->isGet()) {
+        if ($request->isPost()) {
             $market_id = $request->param('market_id');
+            $phone = $request->param('phone');
+            $token = $request->param('token');
             $order = new Order();
-            return $order->select($market_id);
+            return $order->selectOrder($market_id, $phone, $token);
+        }
+        return config('PARAMS_ERROR');
+    }
+
+    /**
+     * 查询订单
+     * @param Request $request
+     * @return array|mixed
+     */
+    public function orderItem(Request $request)
+    {
+        if ($request->isPost()) {
+            $order_id = $request->param('order_id');
+            $phone = $request->param('phone');
+            $token = $request->param('token');
+            $order = new Order();
+            return $order->selectOrderItem($order_id, $phone, $token);
         }
         return config('PARAMS_ERROR');
     }
