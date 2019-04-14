@@ -28,6 +28,11 @@ class Productcates extends Model
             $catesList = Db::table('ym_productcates')
                 ->where(['market_id' => $market_id])
                 ->select();
+            for ($i=0;$i<count($catesList);$i++){
+                $catesList[$i]["count"]=Db::table('ym_product')
+                    ->where('cateid',$catesList[$i]["cateid"])
+                    ->count();
+            }
             return ['msg' => '查询成功!!', 'status' => 200, 'catesList' => $catesList];
         } catch (DataNotFoundException $e) {
         } catch (ModelNotFoundException $e) {
@@ -58,11 +63,16 @@ class Productcates extends Model
     /**
      * 修改分类
      * @param $cateList
+     * @param $phone
+     * @param $token
+     * @param $market_id
      * @return array
      */
-    public function updateCategory($cateList)
+    public function updateCategory($cateList, $phone, $token,$market_id)
     {
-        $market_id = $cateList[0]["market_id"];
+        if (!checkToken($token, $phone)) {
+            return config('NOT_SUPPORTED');
+        }
         if ($market_id == null) {
             return ['status' => 400, 'msg' => '超市id为空！！'];
         }
@@ -70,7 +80,8 @@ class Productcates extends Model
             Db::table('ym_Productcates')->where('market_id', $market_id)->delete();
             foreach ($cateList as $item) {
                 Db::table('ym_Productcates')
-                    ->insert(['ord' => $item["ord"],
+                    ->insert(['cateid'=>$item["cateid"],
+                        'ord' => $item["ord"],
                         'title' => $item["title"],
                         'market_id' => $item["market_id"]]);
             }
@@ -78,6 +89,7 @@ class Productcates extends Model
         } catch (PDOException $e) {
         } catch (Exception $e) {
         }
+        var_dump($this->getLastSql());
         return ['status' => 400, 'msg' => '更新失败！！'];
     }
 

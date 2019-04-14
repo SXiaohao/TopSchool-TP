@@ -11,10 +11,19 @@ use think\Exception;
 use think\exception\DbException;
 use think\exception\PDOException;
 use think\Model;
+use wxpay\WapPay;
+use WxPayException;
 
 class Order extends Model
 {
-    public function createOrder($itemList, $buyer_id)
+    /**
+     * 创建订单
+     * @param $itemList
+     * @param $buyer_id
+     * @param $type
+     * @return array
+     */
+    public function createOrder($itemList, $buyer_id, $type)
     {
         //创建时间
         $create_time = date('y-m-d H:i:s', time());
@@ -25,7 +34,7 @@ class Order extends Model
             $out_trade_no = date('YmdHis') . mt_rand(1000000, 9999999);
             //创建订单
             $order_id = Db::table('ym_order')->insertGetId(['out_trade_no' => $out_trade_no,
-                'buyer_id' => $buyer_id, 'pay_type' => 1,
+                'buyer_id' => $buyer_id, 'pay_type' => $type,
                 'create_time' => $create_time, 'market_id' => $itemList[0]["market_id"]]);
             foreach ($itemList as $item) {
                 //商品单价
@@ -42,7 +51,7 @@ class Order extends Model
                 ->where('order_id', $order_id)
                 ->update(['real_price' => $real_price]);
             if ($status > 0) {
-                return ['order_id' => $order_id, 'real_price' => round($real_price,2),
+                return ['order_id' => $order_id, 'real_price' => round($real_price, 2),
                     'out_trade_no' => $out_trade_no, 'status' => 200, 'msg' => '成功！！'];
             } else {
                 return ['status' => 400, 'msg' => '服务器异常！'];
@@ -55,42 +64,6 @@ class Order extends Model
         return ['status' => 400, 'msg' => '参数错误！'];
     }
 
-    /**
-     * @param $order_id
-     * @param $remark
-     * @return array
-     * @throws Exception
-     * @throws PDOException
-     * @throws DataNotFoundException
-     * @throws ModelNotFoundException
-     * @throws DbException
-     */
-    public function pay($order_id, $remark)
-    {
-        //查询订单信息
-        $order_info = Db::table('ym_order')->where(['order_id' => $order_id])->find();
-        //获取订单号
-        $out_trade_no = $order_info["out_trade_no"];
-        //获取支付金额
-        $money = $order_info["real_price"];
-        //异步回调地址
-        $url = config('local_path') . '/pay/alipay/alipaynotify';
-
-        $array = alipay('源梦网络', $money, $out_trade_no, $url);
-
-        if ($array) {
-            //更新order表订单备注
-            Db::table('ym_order')
-                ->where('order_id', $order_id)
-                ->update(['remark' => $remark]);
-
-            return ['alipay_sdk' => $array,
-                'status' => '200', 'msg' => '成功'];
-        } else {
-            return ['alipay_sdk' => [],
-                'status' => '400', 'msg' => '失败'];
-        }
-    }
 
     /**
      * 获取今、昨、7天、一个月总金额
@@ -130,7 +103,107 @@ class Order extends Model
                 'balance' => floatval($balance)];
         } catch (Exception $exception) {
         }
-        return ['status' => 400, 'msg' => '查询失败！！',];
+        return ['status' => 400, 'msg' => '查询失败！！'];
     }
 
+    /**
+     * 阿里支付
+     * @param $order_id
+     * @param $remark
+     * @return array
+     * @throws Exception
+     * @throws PDOException
+     * @throws DataNotFoundException
+     * @throws ModelNotFoundException
+     * @throws DbException
+     */
+    public function Alipay($order_id, $remark)
+    {
+        //查询订单信息
+        $order_info = Db::table('ym_order')->where(['order_id' => $order_id])->find();
+        //获取订单号
+        $out_trade_no = $order_info["out_trade_no"];
+        //获取支付金额
+        $money = $order_info["real_price"];
+        //异步回调地址
+        $url = config('local_path') . '/pay/alipay/alipaynotify';
+
+        $array = alipay('源梦网络', $money, $out_trade_no, $url);
+
+        if ($array) {
+            //更新order表订单备注
+            Db::table('ym_order')
+                ->where('order_id', $order_id)
+                ->update(['remark' => $remark]);
+
+            return ['alipay_sdk' => $array,
+                'status' => '200', 'msg' => '成功'];
+        } else {
+            return ['alipay_sdk' => [],
+                'status' => '400', 'msg' => '失败'];
+        }
+    }
+
+    /**
+     * 微信支付
+     * @param $order_id
+     * @param $remark
+     * @return array
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws Exception
+     * @throws ModelNotFoundException
+     * @throws PDOException
+     * @throws WxPayException
+     */
+    public function Wepay($order_id, $remark)
+    {
+        //查询订单信息
+        $order_info = Db::table('ym_order')->where(['order_id' => $order_id])->find();
+        //获取订单号
+        $out_trade_no = $order_info["out_trade_no"];
+        //获取支付金额
+        $money = $order_info["real_price"];
+        $params = [
+            'body' => '源梦网络',
+            'out_trade_no' => $out_trade_no,
+            'total_fee' => $money,
+        ];
+        $result = WapPay::getPayUrl($params);
+        if ($result) {
+            //更新order表订单备注
+            Db::table('ym_order')
+                ->where('order_id', $order_id)
+                ->update(['remark' => $remark]);
+
+            return ['wepay_sdk' => $result,
+                'status' => '200', 'msg' => '成功'];
+        } else {
+            return ['wepay_sdk' => [],
+                'status' => '400', 'msg' => '失败'];
+        }
+    }
+
+    /**
+     * 定单查询
+     * @param $market_id
+     * @return array
+     */
+    public function select($market_id)
+    {
+        try {
+            $orderList = Db::table('order')
+                ->where('market_id', $market_id)
+                ->where('pay_status', 1)
+                ->select();
+            return ['status' => 200,
+                'msg' => '查询成功！！',
+                'orderList' => $orderList];
+        } catch (DataNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
+        } catch (DbException $e) {
+        }
+        return ['status' => 200,
+            'msg' => '查询失败！！'];
+    }
 }

@@ -17,7 +17,18 @@ class CreateOrder extends Controller
             $itemList = $request->param('shopping_cart');
             $buy_id = $request->param('user_id');
             $order = new Order();
-            return $order->createOrder($itemList, $buy_id);
+            return $order->createOrder($itemList, $buy_id, 1);
+        }
+        return config('PARAMS_ERROR');
+    }
+
+    public function createWe(Request $request)
+    {
+        if ($request->isPost()) {
+            $itemList = $request->param('shopping_cart');
+            $buy_id = $request->param('user_id');
+            $order = new Order();
+            return $order->createOrder($itemList, $buy_id, 2);
         }
         return config('PARAMS_ERROR');
     }

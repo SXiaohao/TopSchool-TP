@@ -40,7 +40,7 @@ class Product extends Model
         if ($status) {
             return ['status' => 200, 'msg' => '添加成功！！'];
         }
-        return ['status' => 200, 'msg' => '添加失败！！'];
+        return ['status' => 400, 'msg' => '添加失败！！'];
     }
 
     /**
@@ -52,9 +52,9 @@ class Product extends Model
      */
     public function updateProduct($product)
     {
-        /* if (!checkToken($product->token,$product->phone)){
+         if (!checkToken($product->token,$product->phone)){
              return config('NOT_SUPPORTED');
-         }*/
+         }
         $status = Db::table('ym_product')
             ->where('id', $product->product_id)
             ->update(['market_id' => $product->market_id,
@@ -105,7 +105,7 @@ class Product extends Model
      */
     public function uploadImg($file)
     {
-        var_dump($file);
+
         //上传图片并返回访问路径
         $info = $file->validate(['size' => 1048576, 'ext', 'jpg,jpeg,png,gif'])->move('../public/static/product');
         if ($info) {

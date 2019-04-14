@@ -37,8 +37,7 @@ class MarketVerify extends Model
      * @param $request
      * @return array
      */
-    public
-    function insertInfo($request)
+    public function insertInfo($request)
     {
         if (!checkToken($request->token, $request->phone)) {
             return config('NOT_SUPPORTED');

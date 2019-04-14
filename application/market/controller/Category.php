@@ -56,7 +56,10 @@ class Category extends Controller
         if ($request->isPost()) {
             $productcates = new Productcates();
             $cateList = $request->param('cateList');
-            return $productcates->updateCategory($cateList);
+            $phone=$request->param('phone');
+            $token=$request->param('token');
+            $market_id=$request->param('market_id');
+            return $productcates->updateCategory($cateList,$phone,$token,$market_id);
         }
         return config('PARAMS_ERROR');
     }

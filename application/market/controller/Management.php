@@ -14,7 +14,7 @@ use think\Request;
 class Management extends Controller
 {
     /**
-     * 金额
+     * 查询金额
      * @param Request $request
      * @return array|mixed
      */
@@ -29,6 +29,11 @@ class Management extends Controller
 
     }
 
+    /**
+     * 添加商品
+     * @param Request $request
+     * @return array|mixed
+     */
     public function productAdd(Request $request)
     {
         if ($request->isPost()) {
@@ -38,6 +43,11 @@ class Management extends Controller
         return config('PARAMS_ERROR');
     }
 
+    /**
+     * 删除商品
+     * @param Request $request
+     * @return array|mixed
+     */
     public function productDel(Request $request)
     {
         if ($request->isPost()) {
@@ -52,6 +62,7 @@ class Management extends Controller
     }
 
     /**
+     * 更新商品
      * @param Request $request
      * @return array|mixed
      * @throws Exception
@@ -66,6 +77,12 @@ class Management extends Controller
         }
         return config('PARAMS_ERROR');
     }
+
+    /**
+     * 查询商品分类
+     * @param Request $request
+     * @return mixed
+     */
     public function productCate(Request $request)
     {
         if ($request->isGet()) {
@@ -76,12 +93,32 @@ class Management extends Controller
         return config('PARAMS_ERROR');
     }
 
+    /**
+     * 查询商品
+     * @param Request $request
+     * @return array|mixed
+     */
     public function product(Request $request)
     {
         if ($request->isGet()) {
             $product_id = $request->param('product_id');
             $product = new \app\market\model\Product();
             return $product->selProduct($product_id);
+        }
+        return config('PARAMS_ERROR');
+    }
+
+    /**
+     * 查询订单
+     * @param Request $request
+     * @return array|mixed
+     */
+    public function order(Request $request)
+    {
+        if ($request->isGet()) {
+            $market_id = $request->param('market_id');
+            $order = new Order();
+            return $order->select($market_id);
         }
         return config('PARAMS_ERROR');
     }

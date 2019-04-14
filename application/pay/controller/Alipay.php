@@ -7,6 +7,11 @@ namespace app\pay\controller;
 use app\pay\model\Order;
 use think\Controller;
 use think\Db;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\ModelNotFoundException;
+use think\Exception;
+use think\exception\DbException;
+use think\exception\PDOException;
 use think\Request;
 
 class Alipay extends Controller
@@ -15,11 +20,11 @@ class Alipay extends Controller
     /**
      * @param Request $request
      * @return array|mixed
-     * @throws \think\Exception
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\ModelNotFoundException
-     * @throws \think\exception\DbException
-     * @throws \think\exception\PDOException
+     * @throws Exception
+     * @throws DataNotFoundException
+     * @throws ModelNotFoundException
+     * @throws DbException
+     * @throws PDOException
      */
     public function payOrder(Request $request)
     {
@@ -28,7 +33,7 @@ class Alipay extends Controller
             $order_id = $request->param('order_id');
             $remark = $request->param('remark');
             $order = new Order();
-            return $order->pay($order_id, $remark);
+            return $order->Alipay($order_id, $remark);
         }
         return config('PARAMS_ERROR');
     }
