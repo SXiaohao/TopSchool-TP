@@ -32,8 +32,9 @@ class Alipay extends Controller
             //获取订单号
             $order_id = $request->param('order_id');
             $remark = $request->param('remark');
+            $address=$request->param('address');
             $order = new Order();
-            return $order->Alipay($order_id, $remark);
+            return $order->Alipay($order_id, $remark,$address);
         }
         return config('PARAMS_ERROR');
     }
@@ -41,7 +42,7 @@ class Alipay extends Controller
     /**
      * 支付宝支付回调修改订单状态
      */
-    public function alipayNotify()
+    public function notify()
     {
         //原始订单号
         $out_trade_no = input('out_trade_no');
@@ -52,36 +53,11 @@ class Alipay extends Controller
 
         $pay_amount = input('total_amount');
 
-
-        if ($trade_status == 'TRADE_FINISHED' || $trade_status == 'TRADE_SUCCESS') {
-
-            $data['trade_status'] = 1;
-            $data['pay_status'] = 1;
-            $data['trade_no'] = $trade_no;
-            $data['pay_time'] = date('y-m-d H:i:s', time());
-            $data['pay_amount'] = $pay_amount;
-            $result = Db::table('ym_order')->where(['out_trade_no' => $out_trade_no,])->update($data);
-
-            if ($result) {
-                $real_price = Db::table('ym_order')->where(['out_trade_no' => $out_trade_no])
-                    ->value('real_price');
-                $market_id = Db::table('ym_order')->where(['out_trade_no' => $out_trade_no])
-                    ->value('market_id');
-                Db::table('ym_market')
-                    ->where('market_id', $market_id)
-                    ->setInc('balance', floatval($real_price));
-                echo 'success';
-            } else {
-                echo 'fail';
-            }
-        } else {
-            $data['trade_status'] = 2;
-            $data['pay_status'] = 0;
-            $data['trade_no'] = $trade_no;
-            $data['pay_time'] = date('y-m-d H:i:s', time());
-            $data['pay_amount'] = 0.00;
-            Db::table('ym_order')->where(['out_trade_no' => $out_trade_no,])->update($data);
-            echo "fail";
+        $order = new Order();
+        try {
+            $order->updateOrder($out_trade_no, $trade_no, $trade_status, $pay_amount);
+        } catch (PDOException $e) {
+        } catch (Exception $e) {
         }
     }
 }

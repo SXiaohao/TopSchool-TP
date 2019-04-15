@@ -77,10 +77,11 @@ class MarketVerify extends Model
     private function uploadImg($file, $type)
     {
         //上传图片并返回访问路径
-        $info = $file->validate(['ext', 'jpg,jpeg,png,gif'])->move('../public/static/' . $type);
+        $info = $file->validate(['ext', 'jpg,jpeg,png,gif'])->move('../public/static/market/' .
+            $type);
         if ($info) {
             $getSaveName = str_replace("\\", "/", $info->getSaveName());
-            $imagePath = config('local_path') . "/static/" . $type . "/" . $getSaveName;
+            $imagePath = config('local_path') . "/static/market/" . $type . "/" . $getSaveName;
         } else {
             return ['status' => 400,
                 'msg' => $file->getError()];
