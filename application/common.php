@@ -94,13 +94,13 @@ function uc_time_ago($targetTime)
     $agoTime = $todayLast - $targetTime;
     $agoDay = floor($agoTime / 86400);
 
-    if($agoDay == 0) {
+    if ($agoDay == 0) {
         $result = '今天 ' . date('H:i', $targetTime);
     } elseif ($agoDay == 1) {
         $result = '昨天 ' . date('H:i', $targetTime);
     } elseif ($agoDay == 2) {
         $result = '前天 ' . date('H:i', $targetTime);
-    }else {
+    } else {
         $result = date('m月d日 ', $targetTime);
     }
     return $result;
@@ -171,7 +171,7 @@ function alipay($body, $total_amount, $out_trade_no, $notify_url)
     $aop->alipayrsaPublicKey = Config('alipay')['alipayrsaPublicKey'];
 
     $request = new AlipayTradeAppPayRequest();
-    $arr['body'] = $body ;
+    $arr['body'] = $body;
     $arr['subject'] = '商品';
     $arr['out_trade_no'] = $out_trade_no;
     $arr['timeout_express'] = '30m';
@@ -186,4 +186,39 @@ function alipay($body, $total_amount, $out_trade_no, $notify_url)
     $response = $aop->sdkExecute($request);
     return $response;
 
+}
+
+/*
+   * 微信支付
+   * $body            名称
+   * $total_amount    价格
+   * $product_code    订单号
+   * $notify_url      异步回调地址
+   */
+function wepay($body, $total_amount, $out_trade_no)
+{
+    header('Access-Control-Allow-Origin: *');
+    header('Content-type: text/plain');
+
+    require_once "../extend/wxpayv3/WxPay.Api.php";
+    require_once "../extend/wxpayv3/WxPay.Data.php";
+
+    $total = floatval($total_amount);
+    $total = round($total * 100); // 将元转成分
+
+    if (empty($total)) {
+        $total = 100;
+    }
+    $unifiedOrder = new WxPayUnifiedOrder();
+    $unifiedOrder->SetBody($body);//商品或支付单简要描述
+    $unifiedOrder->SetOut_trade_no($out_trade_no);
+    $unifiedOrder->SetTotal_fee($total);
+    $unifiedOrder->SetTrade_type('APP');
+
+    $result = WxPayApi::unifiedOrder($unifiedOrder);
+    if (is_array($result)) {
+        return json_encode($result);
+    }
+
+    return false;
 }

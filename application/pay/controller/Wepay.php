@@ -38,14 +38,16 @@ class Wepay extends Controller
      * @throws DbException
      * @throws PDOException
      */
-    public function wepay(Request $request)
+    public function payOrder(Request $request)
     {
         if ($request->isPost()) {
             //获取订单号
             $order_id = $request->param('order_id');
             $remark = $request->param('remark');
+            $address=$request->param('address');
             $order = new Order();
-            return $order->Wepay($order_id, $remark);
+
+            return $order->Wepay($order_id, $remark,$address);
         }
         return config('PARAMS_ERROR');
     }
@@ -53,6 +55,10 @@ class Wepay extends Controller
     // 通知测试
     public function notify()
     {
+        header('Access-Control-Allow-Origin: *');
+        header('Content-type: text/plain');
 
+
+        echo 'SUCCESS';
     }
 }

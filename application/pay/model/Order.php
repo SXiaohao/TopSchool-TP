@@ -73,9 +73,7 @@ class Order extends Model
                 return ['status' => 400, 'msg' => '服务器异常！'];
             }
         } catch (PDOException $e) {
-            var_dump($this->getLastSql());
         } catch (Exception $e) {
-            var_dump($this->getLastSql());
         }
         return ['status' => 400, 'msg' => '参数错误！'];
     }
@@ -189,7 +187,7 @@ class Order extends Model
             Db::table('ym_order')
                 ->where('order_id', $order_id)
                 ->update(['remark' => $remark,
-                    '$address' => $address]);
+                    'address' => $address]);
 
             return ['alipay_sdk' => $array,
                 'status' => '200', 'msg' => '成功'];
@@ -211,7 +209,7 @@ class Order extends Model
      * @throws PDOException
      * @throws WxPayException
      */
-    public function Wepay($order_id, $remark)
+    public function Wepay($order_id, $remark,$address)
     {
         //查询订单信息
         $order_info = Db::table('ym_order')->where(['order_id' => $order_id])->find();
@@ -219,12 +217,9 @@ class Order extends Model
         $out_trade_no = $order_info["out_trade_no"];
         //获取支付金额
         $money = $order_info["real_price"];
-        $params = [
-            'body' => '源梦网络',
-            'out_trade_no' => $out_trade_no,
-            'total_fee' => $money,
-        ];
-        $result = WapPay::getPayUrl($params);
+
+        $result = wepay('源梦网络', $money, $out_trade_no);
+
         if ($result) {
             //更新order表订单备注
             Db::table('ym_order')

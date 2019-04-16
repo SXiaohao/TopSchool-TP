@@ -22,7 +22,7 @@ class CreateOrder extends Controller
         return config('PARAMS_ERROR');
     }
 
-    public function createWe(Request $request)
+   /* public function createWe(Request $request)
     {
         if ($request->isPost()) {
             $itemList = $request->param('shopping_cart');
@@ -31,7 +31,7 @@ class CreateOrder extends Controller
             return $order->createOrder($itemList, $buy_id, 2);
         }
         return config('PARAMS_ERROR');
-    }
+    }*/
 
     public function select(Request $request)
     {
