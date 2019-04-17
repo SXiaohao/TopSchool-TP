@@ -16,6 +16,8 @@ use WxPayException;
 
 class Order extends Model
 {
+    const COUNT_OF_PAGE = 10;
+
     /**
      * 创建订单
      * @param $itemList
@@ -53,9 +55,9 @@ class Order extends Model
                         'create_time' => $create_time]);
                 $real_price += $price * $item["count"];
             }
-            $first_product=$itemList[0]["title"];
-            if ($count>1){
-                $first_product=$itemList[0]["title"].'等'.$count.'件商品';
+            $first_product = $itemList[0]["title"];
+            if ($count > 1) {
+                $first_product = $itemList[0]["title"] . '等' . $count . '件商品';
             }
             //更新order表订单金额
             $status = Db::table('ym_order')
@@ -88,7 +90,6 @@ class Order extends Model
     public function aliUpdateOrder($out_trade_no, $trade_no, $trade_status, $pay_amount)
     {
         if ($trade_status == 'TRADE_FINISHED' || $trade_status == 'TRADE_SUCCESS') {
-            $data['trade_status'] = 1;
             $data['pay_status'] = 1;
             $data['trade_no'] = $trade_no;
             $data['pay_time'] = date('y-m-d H:i:s', time());
@@ -128,7 +129,6 @@ class Order extends Model
         if ($obj["return_code"] != 'SUCCESS') {
             die($obj->return_msg);
         }
-        $data['trade_status'] = 1;
         $data['pay_status'] = 1;
         $data['trade_no'] = $obj["transaction_id"];
         $data['pay_time'] = date('y-m-d H:i:s', time());
@@ -218,7 +218,7 @@ class Order extends Model
         //异步回调地址
         $url = config('local_path') . '/pay/alipay/notify';
 
-        $array = alipay('源梦网络', $money, $out_trade_no, $url,$order_info["first_product"]);
+        $array = alipay('源梦网络', $money, $out_trade_no, $url, $order_info["first_product"]);
 
         if ($array) {
             //更新order表订单备注
@@ -278,21 +278,31 @@ class Order extends Model
      * @param $market_id
      * @param $phone
      * @param $token
+     * @param $type
+     * @param $page
      * @return array
      */
-    public function selectOrder($market_id, $phone, $token)
+    public function selectOrder($market_id, $phone, $token, $type, $page)
     {
-        if (!checkToken($token, $phone)) {
+        /*if (!checkToken($token, $phone)) {
             return config('NOT_SUPPORTED');
-        }
+        }*/
         try {
-            $orderList = Db::table('ym_order')
-                ->where('market_id', $market_id)
-                ->where('pay_status', 1)
-                ->select();
-            return ['status' => 200,
-                'msg' => '查询成功！！',
-                'orderList' => $orderList];
+            switch ($type) {
+                case "待付款":
+                    return $this->selectOrderAndPage($market_id, $page, 0);
+                case "已付款":
+                    return $this->selectOrderAndPage($market_id, $page, 1);
+                case "已退款":
+                    return $this->selectOrderAndPage($market_id, $page, 2);
+                case "待处理":
+                    return $this->selectDispose($market_id, $page, 0);
+                case "已处理":
+                    return $this->selectDispose($market_id, $page, 1);
+                default:
+                    break;
+            }
+
         } catch (DataNotFoundException $e) {
         } catch (ModelNotFoundException $e) {
         } catch (DbException $e) {
@@ -326,5 +336,46 @@ class Order extends Model
         }
         return ['status' => 200,
             'msg' => '查询失败！！'];
+    }
+
+    private function selectOrderAndPage($market_id, $page, $type)
+    {
+        $orderList = Db::table('ym_order')
+            ->where('market_id', $market_id)
+            ->where('pay_status', $type)
+            ->where('dispose', 0)
+            ->order('create_time', 'DESC')
+            ->page($page, 10)
+            ->select();
+        $totalPages = ceil(Db::table('ym_order')
+                ->where('market_id', $market_id)
+                ->where('pay_status', $type)
+                ->where('dispose', 0)
+                ->count('*') / Order::COUNT_OF_PAGE);
+        return ['status' => 200,
+            'msg' => '查询成功！！',
+            'orderList' => $orderList,
+            'totalPages' => $totalPages];
+    }
+
+    private function selectDispose($market_id, $page, $type)
+    {
+            $orderList = Db::table('ym_order')
+                ->where('market_id', $market_id)
+                ->where('pay_status', 1)
+                ->where('dispose', $type)
+                ->order('create_time', 'DESC')
+                ->page($page, 10)
+                ->select();
+            $totalPages = ceil(Db::table('ym_order')
+                    ->where('market_id', $market_id)
+                    ->where('pay_status', 1)
+                    ->where('dispose', $type)
+                    ->count('*') / Order::COUNT_OF_PAGE);
+            return ['status' => 200,
+                'msg' => '查询成功！！',
+                'orderList' => $orderList,
+                'totalPages' => $totalPages];
+
     }
 }

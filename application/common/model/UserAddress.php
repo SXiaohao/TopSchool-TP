@@ -5,12 +5,14 @@ namespace app\common\model;
 
 
 use think\Db;
+use think\db\exception\DataNotFoundException;
 use think\db\exception\ModelNotFoundException;
 use think\Exception;
 use think\exception\DbException;
 use think\exception\PDOException;
+use think\Model;
 
-class UserAddress
+class UserAddress extends Model
 {
     /**
      * @param $user_id
@@ -21,17 +23,9 @@ class UserAddress
         try {
             $address = Db::table('ym_user_address')
                 ->where('user_id', $user_id)
-                ->value('address');
-            $phone = Db::table('ym_user_address')
-                ->where('user_id', $user_id)
-                ->value('phone');
-            $name = Db::table('ym_user_address')
-                ->where('user_id', $user_id)
-                ->value('name');
-            return ['status' => 200, 'msg' => '查询成功！！',
-                'address' => $address,
-                'phone' => $phone,
-                'name' => $name];
+                ->select();
+
+            return  $address[0];
         } catch (ModelNotFoundException $e) {
         } catch (DbException $e) {
         }
@@ -43,23 +37,30 @@ class UserAddress
      * @param $user_id
      * @param $phone
      * @param $address
+     * @param $name
+     * @param $city
      * @return array
      * @throws Exception
      * @throws PDOException
      */
-    public function updateAddress($user_id, $phone, $address,$name)
+    public function updateAddress($user_id, $phone, $address, $name, $city)
     {
-        if (Db::table('ym_user_address')->where('user_id', $user_id)
-                ->select() != null) {
-            $status = Db::table('ym_user_address')->where('user_id', $user_id)
-                ->update(['address' => $address, 'phone' => $phone,'name'=>$name]);
-            if ($status > 0) {
-                return ['status' => 200, 'msg' => '更新成功！！'];
-            }
-            return ['status' => 400, 'msg' => '更新失败！！'];
-        }
         $status = Db::table('ym_user_address')
-            ->insert(['user_id' => $user_id, 'phone' => $phone, 'address' => $address]);
+            ->where('user_id', $user_id)
+            ->update(['address' => $address, 'phone' => $phone,
+                'name' => $name, 'city' => $city]);
+        if ($status > 0) {
+            return ['status' => 200, 'msg' => '更新成功！！'];
+        }
+        return ['status' => 400, 'msg' => '更新失败！！'];
+
+
+    }
+
+    public function addAddress($user_id)
+    {
+        $status = Db::table('ym_user_address')
+            ->insert(['user_id' => $user_id]);
         if ($status > 0) {
             return ['status' => 200, 'msg' => '添加成功！！'];
         }

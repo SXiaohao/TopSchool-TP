@@ -10,6 +10,7 @@ namespace app\common\controller;
 
 use app\common\model\School;
 use app\common\model\User;
+use app\common\model\UserAddress;
 use think\Controller;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\ModelNotFoundException;
@@ -20,25 +21,28 @@ use think\Request;
 
 class Login extends Controller
 {
-    public function login(Request $request){
+    public function login(Request $request)
+    {
         $phone = $request->phone;
         $password = $request->password;
         $User = new User();
         $User = $User->findByPhone($phone);
         //如果用户存在
-        if($User) {
+        if ($User) {
             if ($User->password === passSalt($password)) {//验证密码
-                    $School = new School();
-                    $School = $School->getBySchoolId($User->id);
-                    $token=getToken($phone);
-                    Cache::set($phone,$token);//缓存获取的token
-                    return ['status'=>200,'msg'=>'登录成功','user'=>$User,'school'=>$School,'token'=>$token];
+                $School = new School();
+                $School = $School->getBySchoolId($User->id);
+                $token = getToken($phone);
+                Cache::set($phone, $token);//缓存获取的token
+                $address = new UserAddress();
+                return ['status' => 200, 'msg' => '登录成功', 'user' => $User, 'school' => $School,
+                    'token' => $token, 'addressInfo' => $address->selectAddress($User->user_id)];
 
-            }else{
-                return ['status'=>201,'msg'=>'手机号或密码错误!'];
+            } else {
+                return ['status' => 201, 'msg' => '手机号或密码错误!'];
             }
         } else {
-            return ['status'=>202,'msg'=>'您的手机号未注册，请先注册!'];
+            return ['status' => 202, 'msg' => '您的手机号未注册，请先注册!'];
         }
     }
 }

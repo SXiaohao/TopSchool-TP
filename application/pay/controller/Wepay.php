@@ -28,14 +28,13 @@ class Wepay extends Controller
 
 
     /**
-     *  H5支付
+     * 支付
      * @param Request $request
      * @return array|mixed
-     * @throws WxPayException
-     * @throws Exception
      * @throws DataNotFoundException
-     * @throws ModelNotFoundException
      * @throws DbException
+     * @throws Exception
+     * @throws ModelNotFoundException
      * @throws PDOException
      */
     public function payOrder(Request $request)
@@ -54,6 +53,7 @@ class Wepay extends Controller
 
 
     /**
+     * 异步回调地址
      * @throws Exception
      * @throws PDOException
      */

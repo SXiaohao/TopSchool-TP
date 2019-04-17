@@ -119,8 +119,10 @@ class Management extends Controller
             $market_id = $request->param('market_id');
             $phone = $request->param('phone');
             $token = $request->param('token');
+            $type = $request->param('type');
+            $page = $request->param('page');
             $order = new Order();
-            return $order->selectOrder($market_id, $phone, $token);
+            return $order->selectOrder($market_id, $phone, $token, $type, $page);
         }
         return config('PARAMS_ERROR');
     }

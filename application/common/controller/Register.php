@@ -10,6 +10,7 @@ namespace app\common\controller;
 
 use app\common\model\Miaodi;
 use app\common\model\User;
+use app\common\model\UserAddress;
 use think\Controller;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\ModelNotFoundException;
@@ -104,6 +105,8 @@ class Register extends Controller
             $token = getToken($phone);//获取token
             Cache::set($phone, $token);
             $User = $User->findByPhone($phone);
+            $address=new UserAddress();
+            $address->addAddress($User->user_id);
             return json(['status' => 200, 'msg' => '注册成功', 'user' => $User, 'token' => $token]);
         } else {
             return config('SYS_ERROR');
