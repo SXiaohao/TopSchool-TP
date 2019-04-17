@@ -55,7 +55,7 @@ class Alipay extends Controller
 
         $order = new Order();
         try {
-            $order->updateOrder($out_trade_no, $trade_no, $trade_status, $pay_amount);
+            $order->aliUpdateOrder($out_trade_no, $trade_no, $trade_status, $pay_amount);
         } catch (PDOException $e) {
         } catch (Exception $e) {
         }

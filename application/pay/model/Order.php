@@ -20,10 +20,9 @@ class Order extends Model
      * 创建订单
      * @param $itemList
      * @param $buyer_id
-     * @param $type
      * @return array
      */
-    public function createOrder($itemList, $buyer_id, $type)
+    public function createOrder($itemList, $buyer_id)
     {
         //创建时间
         $create_time = date('y-m-d H:i:s', time());
@@ -36,9 +35,8 @@ class Order extends Model
             //创建订单
             $order_id = Db::table('ym_order')
                 ->insertGetId(['out_trade_no' => $out_trade_no,
-                    'buyer_id' => $buyer_id, 'pay_type' => $type,
+                    'buyer_id' => $buyer_id,
                     'first_img' => $itemList[0]["img"],
-                    'first_product' => $itemList[0]["title"],
                     'create_time' => $create_time,
                     'market_id' => $itemList[0]["market_id"]]);
             foreach ($itemList as $item) {
@@ -55,19 +53,19 @@ class Order extends Model
                         'create_time' => $create_time]);
                 $real_price += $price * $item["count"];
             }
+            $first_product=$itemList[0]["title"];
+            if ($count>1){
+                $first_product=$itemList[0]["title"].'等'.$count.'件商品';
+            }
             //更新order表订单金额
             $status = Db::table('ym_order')
                 ->where('order_id', $order_id)
                 ->update(['real_price' => $real_price,
-                    'count' => $count]);
+                    'first_product' => $first_product]);
             if ($status > 0) {
-                $address = Db::table('ym_user_address')
-                    ->where('user_id', $buyer_id)
-                    ->value('address');
                 return ['order_id' => $order_id,
                     'real_price' => round($real_price, 2),
                     'out_trade_no' => $out_trade_no,
-                    'address' => $address,
                     'status' => 200, 'msg' => '成功！！'];
             } else {
                 return ['status' => 400, 'msg' => '服务器异常！'];
@@ -87,7 +85,7 @@ class Order extends Model
      * @throws Exception
      * @throws PDOException
      */
-    public function updateOrder($out_trade_no, $trade_no, $trade_status, $pay_amount)
+    public function aliUpdateOrder($out_trade_no, $trade_no, $trade_status, $pay_amount)
     {
         if ($trade_status == 'TRADE_FINISHED' || $trade_status == 'TRADE_SUCCESS') {
             $data['trade_status'] = 1;
@@ -95,6 +93,7 @@ class Order extends Model
             $data['trade_no'] = $trade_no;
             $data['pay_time'] = date('y-m-d H:i:s', time());
             $data['pay_amount'] = $pay_amount;
+            $data['pay_type'] = 1;
             $result = Db::table('ym_order')
                 ->where(['out_trade_no' => $out_trade_no,])
                 ->update($data);
@@ -114,6 +113,45 @@ class Order extends Model
         } else {
             echo 'fail';
         }
+    }
+
+    /**
+     * 更新订单
+     * @param $obj
+     * @return string
+     * @throws Exception
+     * @throws PDOException
+     */
+    public function weUpdateOrder($obj)
+    {
+
+        if ($obj["return_code"] != 'SUCCESS') {
+            die($obj->return_msg);
+        }
+        $data['trade_status'] = 1;
+        $data['pay_status'] = 1;
+        $data['trade_no'] = $obj["transaction_id"];
+        $data['pay_time'] = date('y-m-d H:i:s', time());
+        $data['pay_amount'] = number_format($obj["total_fee"] / 100, 2);
+        $data['pay_type'] = 2;
+
+        $result = Db::table('ym_order')
+            ->where(['out_trade_no' => $obj["out_trade_no"],])
+            ->update($data);
+
+        if ($result) {
+            $real_price = Db::table('ym_order')->where(['out_trade_no' => $obj["out_trade_no"]])
+                ->value('real_price');
+            $market_id = Db::table('ym_order')->where(['out_trade_no' => $obj["out_trade_no"]])
+                ->value('market_id');
+            Db::table('ym_market')
+                ->where('market_id', $market_id)
+                ->setInc('balance', floatval($real_price));
+            return '<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>';
+        } else {
+            echo '<xml><return_code><![CDATA[SUCCESS]]></return_code><return_msg><![CDATA[OK]]></return_msg></xml>';
+        }
+
     }
 
     /**
@@ -180,7 +218,7 @@ class Order extends Model
         //异步回调地址
         $url = config('local_path') . '/pay/alipay/notify';
 
-        $array = alipay('源梦网络', $money, $out_trade_no, $url);
+        $array = alipay('源梦网络', $money, $out_trade_no, $url,$order_info["first_product"]);
 
         if ($array) {
             //更新order表订单备注
@@ -201,15 +239,15 @@ class Order extends Model
      * 微信支付
      * @param $order_id
      * @param $remark
+     * @param $address
      * @return array
      * @throws DataNotFoundException
      * @throws DbException
      * @throws Exception
      * @throws ModelNotFoundException
      * @throws PDOException
-     * @throws WxPayException
      */
-    public function Wepay($order_id, $remark,$address)
+    public function Wepay($order_id, $remark, $address)
     {
         //查询订单信息
         $order_info = Db::table('ym_order')->where(['order_id' => $order_id])->find();
@@ -218,13 +256,14 @@ class Order extends Model
         //获取支付金额
         $money = $order_info["real_price"];
 
-        $result = wepay('源梦网络', $money, $out_trade_no);
+        $result = wepay('TOP校园', $money, $out_trade_no);
 
         if ($result) {
             //更新order表订单备注
             Db::table('ym_order')
                 ->where('order_id', $order_id)
-                ->update(['remark' => $remark]);
+                ->update(['remark' => $remark,
+                    'address' => $address]);
 
             return ['wepay_sdk' => $result,
                 'status' => '200', 'msg' => '成功'];

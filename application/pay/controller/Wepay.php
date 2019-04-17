@@ -44,21 +44,28 @@ class Wepay extends Controller
             //获取订单号
             $order_id = $request->param('order_id');
             $remark = $request->param('remark');
-            $address=$request->param('address');
+            $address = $request->param('address');
             $order = new Order();
 
-            return $order->Wepay($order_id, $remark,$address);
+            return $order->Wepay($order_id, $remark, $address);
         }
         return config('PARAMS_ERROR');
     }
 
-    // 通知测试
+
+    /**
+     * @throws Exception
+     * @throws PDOException
+     */
     public function notify()
     {
         header('Access-Control-Allow-Origin: *');
         header('Content-type: text/plain');
+        $testxml = file_get_contents("php://input");
+        $obj = json_encode(simplexml_load_string($testxml, 'SimpleXMLElement', LIBXML_NOCDATA));
+        $obj=json_decode($obj, true);
 
-
-        echo 'SUCCESS';
+        $order = new Order();
+        $order->weUpdateOrder($obj);
     }
 }

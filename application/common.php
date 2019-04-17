@@ -153,7 +153,7 @@ function array_to_object($arr)
    * $product_code    订单号
    * $notify_url      异步回调地址
    */
-function alipay($body, $total_amount, $out_trade_no, $notify_url)
+function alipay($body, $total_amount, $out_trade_no, $notify_url,$first_product)
 {
     /**
      * 调用支付宝接口。
@@ -172,7 +172,7 @@ function alipay($body, $total_amount, $out_trade_no, $notify_url)
 
     $request = new AlipayTradeAppPayRequest();
     $arr['body'] = $body;
-    $arr['subject'] = '商品';
+    $arr['subject'] = $first_product;
     $arr['out_trade_no'] = $out_trade_no;
     $arr['timeout_express'] = '30m';
 
