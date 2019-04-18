@@ -34,6 +34,7 @@ class Job extends Model
                 'jobstatus' => 1,
                 'status' => 1,
                 'site' => $job->site,
+                'type' => $job->type,
                 'addtime' => date('Y-m-d H:i:s', time())]
         )) {
             return ['status' => 200, 'msg' => '发布成功！！'];
@@ -42,10 +43,16 @@ class Job extends Model
 
     }
 
-    public function selJob($page,$id)
+    /**
+     * 查询兼职
+     * @param $page
+     * @param $id
+     * @return array
+     */
+    public function selJob($page, $id)
     {
-        $county=Db::table('ym_school')
-            ->where('id',$id)
+        $county = Db::table('ym_school')
+            ->where('id', $id)
             ->value('county');
         $totalPages = ceil(Db::table('ym_job')
                 ->field('ym_job.*')
@@ -55,7 +62,7 @@ class Job extends Model
 
         try {
 
-            if ($id!=null) {
+            if ($id != null) {
                 $jobList = Db::table('ym_job')
                     ->field('ym_job.*')
                     ->where(['county' => $county])
@@ -80,74 +87,7 @@ class Job extends Model
         }
     }
 
-    /**
-     * 分页查询
-     * @param $page
-     * @param $jobtitle
-     * @param $id
-     * @return array
-     */
-    public function likeJob($page, $jobtitle, $id)
-    {
 
-        $totalPages = ceil(Db::table('ym_job')
-                ->join('ym_school', 'ym_school.id = ym_job.schoolid')
-                ->where(['ym_school.id' => $id, 'ym_job.jobtitle' => $jobtitle])
-                ->where(['ym_job.status' => 1, 'ym_job.jobstatus' => 1])
-                ->count('*') / Job::COUNT_OF_PAGE);
-
-        try {
-            if ($jobtitle != null) {
-                $jobList = Db::table('ym_job')
-                    ->join('ym_school', 'ym_school.id = ym_job.schoolid')
-                    ->where(['ym_school.id' => $id, 'ym_job.jobtitle' => $jobtitle])
-                    ->where(['ym_job.status' => 1, 'ym_job.jobstatus' => 1])
-                    ->page($page, 10)
-                    ->select();
-                $this->getLastSql();
-                return [
-                    'status' => 200,
-                    'msg' => '请过目！',
-                    'jobList' => $jobList,
-                    'totalPages' => $totalPages,
-                ];
-            }
-            return [
-                'status' => 400,
-                'msg' => '还没有这个兼职！试试别的吧！',
-            ];
-        } catch (DataNotFoundException $e) {
-        } catch (ModelNotFoundException $e) {
-        } catch (DbException $e) {
-        }
-    }
-
-    /**
-     * 更改数据
-     * @param $id
-     * @param $jobtitle
-     * @param $schoolid
-     * @param $units
-     * @param $validtime
-     * @param $site
-     * @param $treatment
-     * @param $content
-     * @return array
-     * @throws Exception
-     * @throws PDOException
-     */
-    public function updateJob($id, $jobtitle, $schoolid, $units, $validtime, $site, $treatment, $content)
-    {
-        $update = Db::table('think_user')
-            ->where('id', $id)
-            ->update(['jobtitle' => $jobtitle, 'units' => $units, 'validtime' => $validtime, 'site' => $site, 'treatment' => $treatment, 'content' => $content]);
-        return [
-            $this->getLastSql(),
-            'status' => 200,
-            'meg' => '更新成功',
-            $update,
-        ];
-    }
 
     /**
      * 删除兼职
@@ -168,11 +108,79 @@ class Job extends Model
             }
             return [
                 'status' => 400,
-                'meg' => '稍后再试',
+                'meg' => '操作失误,稍后再试',
             ];
         } catch (PDOException $e) {
         } catch (Exception $e) {
         }
 
     }
+
+    public function getJobList($page, $type, $county)
+    {
+        if ($type == "全部") {
+            $totalPages = ceil(Db::table('ym_job')
+                    ->where(['county' => $county, 'status' => 1])
+                    ->count('*') / Job::COUNT_OF_PAGE);
+        } else {
+            $totalPages = ceil(Db::table('ym_job')
+                    ->where(['county' => $county, 'type' => $type, 'status' => 1])
+                    ->count('*') / Job::COUNT_OF_PAGE);
+        }
+
+        try {
+            switch ($type) {
+                case "长期兼职":
+                    $jobList = Db::table('ym_job')
+                        ->where(['county' => $county])
+                        ->where(['status' => 1, 'jobstatus' => 1])
+                        ->page($page, 10)
+                        ->select();
+
+                    return ['status' => 200, 'msg' => '查询成功！！',
+                        'jobList' => $jobList, 'totalPages' => $totalPages];
+
+                case "短期兼职":
+                    $jobList = Db::table('ym_job')
+                        ->where(['county' => $county])
+                        ->where(['status' => 1, 'jobstatus' => 1])
+                        ->page($page, 10)
+                        ->select();
+
+                    return ['status' => 200, 'msg' => '查询成功！！',
+                        'jobList' => $jobList, 'totalPages' => $totalPages];
+
+                case "实习兼职":
+                    $jobList = Db::table('ym_job')
+                        ->where(['county' => $county])
+                        ->where(['status' => 1, 'jobstatus' => 1])
+                        ->page($page, 10)
+                        ->select();
+
+                    return ['status' => 200, 'msg' => '查询成功！！',
+                        'jobList' => $jobList, 'totalPages' => $totalPages];
+
+                case "快结兼职":
+                    $jobList = Db::table('ym_job')
+                        ->where(['county' => $county])
+                        ->where(['status' => 1, 'jobstatus' => 1])
+                        ->page($page, 10)
+                        ->select();
+
+                    return ['status' => 200, 'msg' => '查询成功！！',
+                        'jobList' => $jobList, 'totalPages' => $totalPages];
+
+                default:
+                    break;
+            }
+
+        } catch (DataNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
+        } catch (DbException $e) {
+        }
+        return ['status' => 400, 'msg' => '查询失败！！' ,var_dump($this->getLastSql())];
+
+    }
+
+
 }

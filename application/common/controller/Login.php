@@ -14,6 +14,7 @@ use app\common\model\UserAddress;
 use think\Controller;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\ModelNotFoundException;
+use think\Exception;
 use think\exception\DbException;
 use think\facade\Cache;
 use think\Request;
@@ -45,4 +46,44 @@ class Login extends Controller
             return ['status' => 202, 'msg' => '您的手机号未注册，请先注册!'];
         }
     }
+
+    /**
+     * 验证openId
+     * @param Request $request
+     * @return array
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
+     */
+    public function verifyOpenId(Request $request){
+        if ($request->isGet()){
+            $type=$request->param('type');
+            $open_id=$request->param('openId');
+            $user=new User();
+            return $user->getOpenId($open_id,$type);
+        }
+        return config('PARAMS_ERROR');
+    }
+
+    /**
+     * 绑定用户
+     * @param Request $request
+     * @return array|mixed
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
+     * @throws Exception
+     */
+    public function binding(Request $request){
+        if ($request->isPost()){
+            $phone=$request->param('phone');
+            $password=$request->param('password');
+            $type=$request->param('type');
+            $open_id=$request->param('openId');
+            $user=new User();
+            return $user->bindUser($phone,$password,$open_id,$type);
+        }
+        return config('PARAMS_ERROR');
+    }
+
 }

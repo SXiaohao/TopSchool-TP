@@ -53,23 +53,14 @@ class Job extends Controller
     }
 
 
-    /**
-     * 更改信息
-     * @param Request $request
-     * @return mixed
-     */
-    public function updateJob(Request $request){
+
+    public function getJobList(Request $request){
         if($request->isPost()){
-            $id = $request->param('id');
-            $jobtitle = $request->param('jobtitle');
-            $schoolid = $request->param('schoolid');
-            $units = $request->param('units');
-            $validtime = $request->param('validatime');
-            $site = $request->param('site');
-            $treatment = $request->param('treatment');
-            $content = $request ->param('content');
+            $page = $request->param('page');
+            $type = $request->param('type');
+            $county = $request->param('county');
             $Job = new \app\job\model\Job();
-            return $this->updateJob($id, $jobtitle, $schoolid, $units, $validtime, $site, $treatment, $content);
+            return $Job->getJobList($page,$type,$county);
         }
         return config('PARAMS_ERROR');
     }
