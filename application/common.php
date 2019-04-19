@@ -9,6 +9,10 @@
 // | Author: 流年 <liu21st@gmail.com>
 // +----------------------------------------------------------------------
 // 应用公共文件
+
+
+use think\facade\Cache;
+
 function getToken($phone)
 {
     $key = config('token_key');
@@ -26,7 +30,7 @@ function getToken($phone)
 function checkToken($token, $phone)
 {
 
-    $jwtToken = \think\facade\Cache::get($phone);
+    $jwtToken = Cache::get($phone);
     if ($token != $jwtToken) {
         return false;
         //die("token与用户不符:".$token."++++phone++++:".$phone);
@@ -37,9 +41,9 @@ function checkToken($token, $phone)
     try {
         $json = Firebase\JWT\JWT::decode($jwtToken, $key, array($type));//解密签名token
         return $json;
-    } catch (\Exception $exception) {//如果解密失败，或者超过有效期则die
+    } catch (Exception $exception) {//如果解密失败，或者超过有效期则die
         return false;
-        //die("token已过期");
+
     }
 }
 
@@ -188,13 +192,58 @@ function alipay($body, $total_amount, $out_trade_no, $notify_url,$first_product)
 
 }
 
-/*
-   * 微信支付
-   * $body            名称
-   * $total_amount    价格
-   * $product_code    订单号
-   * $notify_url      异步回调地址
-   */
+/**
+ * 阿里退款
+ * @param $out_trade_no
+ * @param $refund_amount
+ * @return bool
+ * @throws Exception
+ */
+function alipayRefund($out_trade_no, $refund_amount){
+    /**
+     * 调用支付宝接口。
+     */
+    require '../extend/alipay/aop/AopClient.php';
+    require '../extend/alipay/aop/request/AlipayTradeAppPayRequest.php';
+
+    $aop = new AopClient ();
+    $aop->gatewayUrl = Config('alipay')['gatewayUrl'];
+    $aop->appId = Config('alipay')['appId'];
+    $aop->rsaPrivateKey = Config('alipay')['rsaPrivateKey'];
+    $aop->format = Config('alipay')['format'];
+    $aop->charset = Config('alipay')['charset'];
+    $aop->signType = Config('alipay')['signType'];
+    $aop->alipayrsaPublicKey = Config('alipay')['alipayrsaPublicKey'];
+    $request = new AlipayTradeRefundRequest();
+    $request->setBizContent("{" .
+//            "\"trade_no\":\"2017112821001004030523090753\"," .
+        "\"out_trade_no\":\"$out_trade_no\"," .
+        "\"refund_amount\":$refund_amount," .
+        "\"refund_reason\":\"正常退款\","  .
+        "\"operator_id\":\"OP001\"," .
+        "\"store_id\":\"NJ_S_001\"," .
+        "\"terminal_id\":\"NJ_T_001\"" .
+        "  }");
+
+    $result = $aop->execute ( $request );
+    $responseNode = str_replace(".", "_", $request->getApiMethodName()) . "_response";
+    $resultCode = $result->$responseNode->code;
+
+    if(!empty($resultCode)&&$resultCode == 10000){
+        return true;
+    } else {
+        throw new Exception($result->$responseNode->sub_msg);
+    }
+}
+
+/**
+ * 微信支付
+ * @param $body //名称
+ * @param $total_amount //价格
+ * @param $out_trade_no  //订单号
+ * @return bool|false|string
+ * @throws WxPayException
+ */
 function wepay($body, $total_amount, $out_trade_no)
 {
     header('Access-Control-Allow-Origin: *');
@@ -221,4 +270,36 @@ function wepay($body, $total_amount, $out_trade_no)
     }
 
     return false;
+}
+
+/**
+ * 微信退款
+ * @param $out_trade_no
+ * @param $trade_no
+ * @param $real_price
+ * @param $pay_amount
+ * @return bool|false|string
+ * @throws WxPayException
+ */
+function wepayRefund($out_trade_no,$trade_no,$real_price,$pay_amount)
+{
+    header('Access-Control-Allow-Origin: *');
+    header('Content-type: text/plain');
+
+    require_once "../extend/wxpayv3/WxPay.Api.php";
+    require_once "../extend/wxpayv3/WxPay.Data.php";
+
+    $merchid = WxPayConfig::MCHID;
+
+    $input = new WxPayRefund();
+    $input->SetOut_trade_no($out_trade_no);			//自己的订单号
+    $input->SetTransaction_id($trade_no);  	//微信官方生成的订单流水号，在支付成功中有返回
+    $input->SetOut_refund_no(mt_rand(1000000,9999999));			//退款单号
+    $input->SetTotal_fee($real_price*100);			//订单标价金额，单位为分
+    $input->SetRefund_fee($pay_amount*100);			//退款总金额，订单总金额，单位为分，只能为整数
+    $input->SetOp_user_id($merchid);
+
+    $result = WxPayApi::refund($input);	//退款操作
+
+    return $result;
 }

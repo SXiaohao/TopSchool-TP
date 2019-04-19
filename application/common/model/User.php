@@ -62,7 +62,7 @@ class User extends Model
         $login_type = Db::table('ym_user')
             ->where('open_id', $open_id)
             ->value('type');
-        if ($login_type !== null) {
+        if ($login_type !== -1) {
             if ($login_type == $type) {
                 $user = User::where('open_id', $open_id)->find();
                 $School = new School();
@@ -74,7 +74,7 @@ class User extends Model
                 return ['status' => 200, 'msg' => '登录成功', 'user' => $user, 'school' => $School,
                     'token' => $token, 'addressInfo' => $address->selectAddress($user->user_id)];
             }
-            return ['status' => 202, 'msg' => '用户未绑定!'];
+            return ['status' => 201, 'msg' => '用户未绑定!'];
         }
         return ['status' => 201, 'msg' => '用户未绑定！',];
     }

@@ -246,6 +246,7 @@ class Order extends Model
      * @throws Exception
      * @throws ModelNotFoundException
      * @throws PDOException
+     * @throws WxPayException
      */
     public function Wepay($order_id, $remark, $address)
     {
@@ -377,5 +378,21 @@ class Order extends Model
                 'orderList' => $orderList,
                 'totalPages' => $totalPages];
 
+    }
+
+    /**
+     * @param $order_id
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
+     * @throws WxPayException
+     */
+    public function refund($order_id){
+        $orderInfo=Db::table('ym_order')->where('order_id',$order_id)->select();
+        if ($orderInfo['pay_type']==2){
+            //$result=wepayRefund($orderInfo['out_trade_no',$orderInfo['trade_no']);
+        }else{
+            //$result=alipayRefund();
+        }
     }
 }

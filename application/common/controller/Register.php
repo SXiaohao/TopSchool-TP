@@ -12,8 +12,10 @@ use app\common\model\Miaodi;
 use app\common\model\User;
 use app\common\model\UserAddress;
 use think\Controller;
+use think\Db;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\ModelNotFoundException;
+use think\Exception;
 use think\exception\DbException;
 use think\facade\Cache;
 use think\Image;
@@ -46,7 +48,7 @@ class Register extends Controller
                 cache($request->phone, $code, 600);//设置缓存 10分钟有效
                 return json(['status' => 200, 'msg' => '验证码发送成功,请注意查收！']);
             } else {
-                return json(['status' => 400, 'msg' => $result]);
+                return json(['status' => 400, 'msg' => '1小时内获取验证码的次数超过限制！']);
             }
         }
     }
@@ -94,6 +96,15 @@ class Register extends Controller
     }
 
     //注册
+
+    /**
+     * @param Request $request
+     * @return mixed|Json
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
+     * @throws Exception
+     */
     public function register(Request $request)
     {
         if ($request->isGet()) {
@@ -101,7 +112,11 @@ class Register extends Controller
         }
         $User = new User();
         if ($User->register($request)) {
+            $type=$request->param('type');
+            $open_id=$request->param('open_id');
             $phone = $request->param('phone');
+            Db::table('ym_user')->where('phone',$phone)
+                ->update(['type'=>$type,'open_id'=>$open_id]);
             $token = getToken($phone);//获取token
             Cache::set($phone, $token);
             $User = $User->findByPhone($phone);
