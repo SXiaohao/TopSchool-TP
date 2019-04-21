@@ -163,22 +163,22 @@ class Order extends Model
     {
         try {
             $today_amount = Db::field('Sum(real_price) AS amount')->table('ym_order')
-                ->where('to_days(pay_time) = to_days(now())')
+                ->where('to_days(create_time) = to_days(now())')
                 ->where(['pay_status' => 1, 'market_id' => $market_id])
                 ->select()[0]["amount"];
 
-            $yestoday_amount = Db::field('Sum(real_price) AS amount')->table('ym_order')
-                ->where('TO_DAYS( NOW( ) ) - TO_DAYS( pay_time) = 1')
+            $yestoday_amount = Db::field('Sum(real_price)AS amount')->table('ym_order')
+                ->where('TO_DAYS(NOW()) - TO_DAYS(create_time) = 1')
                 ->where(['pay_status' => 1, 'market_id' => $market_id])
                 ->select()[0]["amount"];
 
             $week_amount = Db::field('Sum(real_price) AS amount')->table('ym_order')
-                ->where('YEARWEEK(date_format(pay_time,\'%Y-%m-%d\')) = YEARWEEK(now())')
+                ->where('DATE_SUB(CURDATE(), INTERVAL 6 DAY) <= date(create_time)')
                 ->where(['pay_status' => 1, 'market_id' => $market_id])
                 ->select()[0]["amount"];
 
             $month_amount = Db::field('Sum(real_price) AS amount')->table('ym_order')
-                ->where('DATE_FORMAT( pay_time, \'%Y%m\' ) = DATE_FORMAT( CURDATE() ,\'%Y%m\')')
+                ->where('DATE_FORMAT( create_time, \'%Y%m\' ) = DATE_FORMAT( CURDATE() ,\'%Y%m\')')
                 ->where(['pay_status' => 1, 'market_id' => $market_id])
                 ->select()[0]["amount"];
 

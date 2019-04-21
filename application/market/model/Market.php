@@ -66,12 +66,16 @@ class Market extends Model
      */
     public function findOfPhone($id)
     {
-        $merchant = Db::table('ym_user')->where(['user_id' => $id])->value('merchant');
-        $market_id = Db::table('ym_market')->where(['user_id' => $id])->value('market_id');
+        $merchant = Db::table('ym_user')
+            ->where(['user_id' => $id])->value('merchant');
+        $market_id = Db::table('ym_market')
+            ->where(['user_id' => $id])->value('market_id');
         if ($merchant >= 0) {
-            return ['status' => 200, 'msg' => '查询成功！！', 'merchant' => $merchant, 'market_id' => $market_id];
+            return ['status' => 200, 'msg' => '查询成功！！',
+                'merchant' => $merchant, 'market_id' => $market_id];
         }
-        return ['status' => 400, 'msg' => '查询失败！！', 'merchant' => $merchant, 'market_id' => $market_id];
+        return ['status' => 400, 'msg' => '查询失败！！',
+            'merchant' => $merchant, 'market_id' => $market_id];
     }
 
     /**

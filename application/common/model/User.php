@@ -101,8 +101,8 @@ class User extends Model
                 $School = $School->getBySchoolId($user->id);
                 $token = getToken($phone);
                 Cache::set($phone, $token);//缓存获取的token
-                Db::table('ym_user')->where('phone',$phone)
-                    ->update(['open_id'=>$open_id,'type'=>$type]);
+                Db::table('ym_user')->where('phone', $phone)
+                    ->update(['open_id' => $open_id, 'type' => $type]);
                 $address = new UserAddress();
                 return ['status' => 200, 'msg' => '登录成功', 'user' => $user->findByPhone($phone), 'school' => $School,
                     'token' => $token, 'addressInfo' => $address->selectAddress($user->user_id)];

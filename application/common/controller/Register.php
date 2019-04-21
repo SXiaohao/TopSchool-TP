@@ -82,13 +82,14 @@ class Register extends Controller
         if ($info) {
             //成功上传后获取上传信息 $url输出 /static/avatar/5c8de9a33f1ad.png
             $url = '/static/avatar/' . $info->getSaveName();
-            $image = Image::open($file);
+            $image = Image::open($info);
             $width = $image->width();
             $height = $image->height();
             if ($width < $height) {
                 $height = $width;
             }
-            $image->thumb($height, $height, Image::THUMB_CENTER)->save('../public' . $url, null, 70);
+            $image->thumb($height, $height, Image::THUMB_CENTER)->save('..//public' . $url, null,
+                70);
             return json(['status' => 200, 'msg' => '上传成功', 'url' => $url]);
         } else {
             return json(['status' => 202, 'msg' => $file->getError()]);// 上传失败获取错误信息

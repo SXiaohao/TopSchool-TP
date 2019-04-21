@@ -12,6 +12,7 @@ namespace app\confession\model;
 use think\Db;
 use think\db\exception\DataNotFoundException;
 use think\db\exception\ModelNotFoundException;
+use think\Exception;
 use think\exception\DbException;
 use think\Model;
 
@@ -63,7 +64,7 @@ class Confession extends Model
      * @param $article_id '文章id'
      * @param $phone
      * @return array
-     * @throws \think\Exception
+     * @throws Exception
      */
     public function getArticleContent($article_id, $phone)
     {
@@ -94,14 +95,13 @@ class Confession extends Model
             //浏览量+1
             Confession::where('article_id', $article_id)
                 ->update(['reading_volume' => ['inc', 1]]);
-            $articleContent["article"] = $articleContent["0"];
-            unset($articleContent["0"]);
+
             //判断文章是否有评论
             if (count($comment) > 0) {
                 $comment = $this->foreachReply($comment, $phone);
 
                 //数组改成对象
-                return ['ArticleContent' => array_to_object($articleContent),
+                return ['ArticleContent' => $articleContent[0],
                     'comment_list' => $comment,
                     'other' => '查看全部评论 ',
                     'status' => 200,

@@ -77,9 +77,9 @@ class Productcates extends Model
             return ['status' => 400, 'msg' => '超市id为空！！'];
         }
         try {
-            Db::table('ym_Productcates')->where('market_id', $market_id)->delete();
+            Db::table('ym_productcates')->where('market_id', $market_id)->delete();
             foreach ($cateList as $item) {
-                Db::table('ym_Productcates')
+                Db::table('ym_productcates')
                     ->insert(['cateid'=>$item["cateid"],
                         'ord' => $item["ord"],
                         'title' => $item["title"],
