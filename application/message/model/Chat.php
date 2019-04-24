@@ -127,6 +127,8 @@ class Chat extends Model
 
     /**
      * 解码上面的转义
+     * @param $str
+     * @return mixed
      */
     private function userTextDecode($str)
     {

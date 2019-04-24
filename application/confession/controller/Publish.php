@@ -11,6 +11,9 @@ namespace app\confession\controller;
 
 use app\confession\model\ConfessionImage;
 use think\Controller;
+use think\db\exception\DataNotFoundException;
+use think\db\exception\ModelNotFoundException;
+use think\exception\DbException;
 use think\Request;
 
 class Publish extends Controller
@@ -20,9 +23,9 @@ class Publish extends Controller
     /**
      * @param Request $request
      * @return array
-     * @throws \think\db\exception\DataNotFoundException
-     * @throws \think\db\exception\ModelNotFoundException
-     * @throws \think\exception\DbException
+     * @throws DataNotFoundException
+     * @throws ModelNotFoundException
+     * @throws DbException
      */
     public function upload(Request $request)
     {
@@ -34,7 +37,7 @@ class Publish extends Controller
             $token = $request->param('token');
             return $Upload->uploadArticle($files, $content, $token, $phone);
         }
-        return [config('PARAMS_ERROR')];
+        return config('PARAMS_ERROR');
 
     }
 }

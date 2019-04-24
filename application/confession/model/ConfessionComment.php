@@ -11,6 +11,8 @@ namespace app\confession\model;
 
 use app\common\model\User;
 use think\Db;
+use think\Exception;
+use think\exception\PDOException;
 use think\Model;
 
 class ConfessionComment extends Model
@@ -35,7 +37,9 @@ class ConfessionComment extends Model
         if ($commentator_id != null) {
             if (Db::name('confession_comment')
                 ->data(['commentator_id' => $commentator_id, 'article_id' => $article_id,
-                    'comment_content' => $comment_content, 'comment_time' => date('y-m-d H:i:s', time())])
+                    'comment_content' => userTextEncode($comment_content), 'comment_time' => date
+                    ('y-m-d H:i:s',
+                time())])
                 ->insert()) {
                 return ['status' => 200, 'msg' => '评论成功！！'];
             }
@@ -48,8 +52,8 @@ class ConfessionComment extends Model
      * 点赞
      * @param $id
      * @return array
-     * @throws \think\Exception
-     * @throws \think\exception\PDOException
+     * @throws Exception
+     * @throws PDOException
      */
     public function addThumbUp($id)
     {

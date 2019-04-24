@@ -33,18 +33,23 @@ class Confession extends Model
                 ->table(['ym_user', 'ym_confession', 'ym_confession_image'])
                 ->where('ym_confession.user_id=ym_user.user_id')
                 ->where('ym_confession.article_id=ym_confession_image.article_id')
-                ->where('ym_confession.status=1')
+                ->where('ym_confession.status=1 ')
                 ->group('ym_confession.article_id')
                 ->order('ym_confession.release_time', 'DESC')
                 ->page($page, 20)
                 ->select();
 
             for ($i = 0; $i < count($Confession); $i++) {
-                if (strlen($Confession[$i]["content"]) >240){
-                $Confession[$i]["content"] = mb_strcut($Confession[$i]["content"], 0, 240) . '...';
+
+                if (strlen($Confession[$i]["content"]) > 240) {
+                    $Confession[$i]["content"] = mb_strcut($Confession[$i]["content"], 0, 240) . '...';
                 }
+                $Confession[$i]["content"] = userTextDecode($Confession[$i]["content"]);
                 $Confession[$i]["release_time"] = uc_time_ago($Confession[$i]["release_time"]);
-                $Confession[$i]["images_list"] = explode(",", $Confession[$i]["images_list"]);
+                if ($Confession[$i]["images_list"] != null) {
+                    $Confession[$i]["images_list"] = explode(",", $Confession[$i]["images_list"]);
+                }
+
             }
             return ['cardsList' => $Confession,
                 'totalPages' => ceil(Db::table('ym_confession')->count('*') / Confession::COUNT_OF_PAGE),
@@ -81,10 +86,15 @@ class Confession extends Model
             $articleContent[0]["thumbs_up_status"] = Db::table('ym_thumbsup')
                 ->where(['phone' => $phone, 'type_id' => $article_id, 'thumbs_up_type' => 'article'])
                 ->value('thumbs_up_status');
+            $articleContent[0]["content"] = userTextDecode($articleContent[0]["content"]);
             //格式化文章发布时间
             $articleContent[0]["release_time"] = uc_time_ago($articleContent[0]["release_time"]);
             //图片字符串链接打散成字符串数组
             $articleContent[0]["images_list"] = explode(",", $articleContent[0]["images_list"]);
+
+            if ($articleContent[0]["images_list"][0] == '') {
+                $articleContent[0]["images_list"] = null;
+            }
             //查询前5条评论
             $comment = Db::field('ym_confession_comment.* ,ym_user.user_name AS commentator_name,ym_user.avatar AS avatar')
                 ->table(['ym_confession_comment', 'ym_user'])
@@ -108,7 +118,7 @@ class Confession extends Model
                     'msg' => "成功"];
             }
 
-            return ['ArticleContent' => $articleContent,
+            return ['ArticleContent' => $articleContent[0],
                 'comment_list' => [],
                 'other' => '暂无评论',
                 'status' => 200,
@@ -128,6 +138,7 @@ class Confession extends Model
      * 评论详情页
      *
      * @param $article_id '文章id'
+     * @param $phone
      * @return array '文章的全部的评论'
      */
     public function getCommentAndReply($article_id, $phone)
@@ -174,6 +185,7 @@ class Confession extends Model
                     ->select();
                 for ($j = 0; $j < count($Reply); $j++) {
                     $Reply[$j]["reply_time"] = uc_time_ago($Reply[$j]["reply_time"]);
+                    $Reply[$j]["reply_content"] = userTextDecode($Reply[$j]["reply_content"]);
                 }
                 //是否点过赞
                 $Comment[$i]["thumbs_up_status"] = Db::table('ym_thumbsup')
@@ -181,6 +193,7 @@ class Confession extends Model
                     ->value('thumbs_up_status');
                 $Comment[$i]["comment_time"] = uc_time_ago($Comment[$i]["comment_time"]);
                 $Comment[$i]["reply_list"] = $Reply;
+                $Comment[$i]["comment_content"] = userTextDecode($Comment[$i]["comment_content"]);
 
             } catch (DataNotFoundException $e) {
             } catch (ModelNotFoundException $e) {
@@ -188,6 +201,33 @@ class Confession extends Model
             }
         }
         return $Comment;
+    }
+
+    /**
+     * 首页5条表白墙
+     * @param $id
+     * @return array
+     */
+    public function homePageOfFind($id)
+    {
+        try {
+            $confessionList = Db::field('ym_confession.* ,ym_confession_image.image_path')
+                ->table(['ym_confession', 'ym_confession_image'])
+                ->where('status', 1)
+                ->where('id', $id)
+                ->where('ym_confession.article_id=ym_confession_image.article_id')
+                ->where('image_path IS NOT NULL')
+                ->order('reading_volume', 'DESC')
+                ->group('ym_confession.article_id')
+                ->limit(6)
+                ->select();
+            return ['status' => 200, 'msg' => '查询成功！', 'confessionList' => $confessionList];
+        } catch (DataNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
+        } catch (DbException $e) {
+        }
+
+        return ['status' => 400, 'msg' => '查询失败！'];
     }
 
 }

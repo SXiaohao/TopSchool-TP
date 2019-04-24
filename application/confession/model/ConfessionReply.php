@@ -34,7 +34,7 @@ class ConfessionReply
         if ($replier_id != null && $toReplier_id != null) {
             if (Db::name('confession_reply')
                 ->data(['comment_id' => $comment_id, 'replier_id' => $replier_id,
-                    'reply_content' => $reply_content, 'toReplier_id' => $toReplier_id,
+                    'reply_content' => userTextEncode($reply_content), 'toReplier_id' => $toReplier_id,
                     'reply_time' => date('y-m-d H:i:s', time())])
                 ->insert()) {
                 return ['status' => 200, 'msg' => '回复成功！！'];
