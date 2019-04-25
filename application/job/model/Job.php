@@ -88,7 +88,6 @@ class Job extends Model
     }
 
 
-
     /**
      * 删除兼职
      * @param $id
@@ -116,23 +115,28 @@ class Job extends Model
 
     }
 
-    public function getJobList($page, $type, $county)
+    public function getJobList($page, $type, $id)
     {
+        $county = Db::table('ym_school')
+            ->where('id', $id)
+            ->value('county');
         if ($type == "全部") {
             $totalPages = ceil(Db::table('ym_job')
-                    ->where(['county' => $county, 'status' => 1])
+                    ->where(['county' => $county, 'status' => 1,
+                        'jobstatus' => 1])
                     ->count('*') / Job::COUNT_OF_PAGE);
         } else {
             $totalPages = ceil(Db::table('ym_job')
-                    ->where(['county' => $county, 'type' => $type, 'status' => 1])
+                    ->where(['county' => $county, 'type' => $type,
+                        'status' => 1, 'jobstatus' => 1])
                     ->count('*') / Job::COUNT_OF_PAGE);
         }
-
         try {
             switch ($type) {
-                case "长期兼职":
+                case "日结":
                     $jobList = Db::table('ym_job')
                         ->where(['county' => $county])
+                        ->where('type', $type)
                         ->where(['status' => 1, 'jobstatus' => 1])
                         ->page($page, 10)
                         ->select();
@@ -140,29 +144,20 @@ class Job extends Model
                     return ['status' => 200, 'msg' => '查询成功！！',
                         'jobList' => $jobList, 'totalPages' => $totalPages];
 
-                case "短期兼职":
+                case "短期":
                     $jobList = Db::table('ym_job')
                         ->where(['county' => $county])
+                        ->where('type', $type)
                         ->where(['status' => 1, 'jobstatus' => 1])
                         ->page($page, 10)
                         ->select();
-
                     return ['status' => 200, 'msg' => '查询成功！！',
                         'jobList' => $jobList, 'totalPages' => $totalPages];
 
-                case "实习兼职":
+                case "长期":
                     $jobList = Db::table('ym_job')
                         ->where(['county' => $county])
-                        ->where(['status' => 1, 'jobstatus' => 1])
-                        ->page($page, 10)
-                        ->select();
-
-                    return ['status' => 200, 'msg' => '查询成功！！',
-                        'jobList' => $jobList, 'totalPages' => $totalPages];
-
-                case "快结兼职":
-                    $jobList = Db::table('ym_job')
-                        ->where(['county' => $county])
+                        ->where('type', $type)
                         ->where(['status' => 1, 'jobstatus' => 1])
                         ->page($page, 10)
                         ->select();
@@ -171,14 +166,21 @@ class Job extends Model
                         'jobList' => $jobList, 'totalPages' => $totalPages];
 
                 default:
-                    break;
-            }
+                    $jobList = Db::table('ym_job')
+                        ->where(['county' => $county])
+                        ->where(['status' => 1, 'jobstatus' => 1])
+                        ->page($page, 10)
+                        ->select();
 
+                    return ['status' => 200, 'msg' => '查询成功！！',
+                        'jobList' => $jobList, 'totalPages' => $totalPages];
+
+            }
         } catch (DataNotFoundException $e) {
         } catch (ModelNotFoundException $e) {
         } catch (DbException $e) {
         }
-        return ['status' => 400, 'msg' => '查询失败！！' ,var_dump($this->getLastSql())];
+        return ['status' => 400, 'msg' => '查询失败！！', var_dump($this->getLastSql())];
 
     }
 

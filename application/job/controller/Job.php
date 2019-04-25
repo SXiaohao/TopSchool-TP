@@ -58,9 +58,9 @@ class Job extends Controller
         if($request->isPost()){
             $page = $request->param('page');
             $type = $request->param('type');
-            $county = $request->param('county');
+            $id = $request->param('id');
             $Job = new \app\job\model\Job();
-            return $Job->getJobList($page,$type,$county);
+            return $Job->getJobList($page,$type,$id);
         }
         return config('PARAMS_ERROR');
     }
