@@ -64,4 +64,14 @@ class Job extends Controller
         }
         return config('PARAMS_ERROR');
     }
+
+    public function getJob(Request $request){
+        if($request->isPost()){
+
+            $id = $request->param('id');
+            $Job = new \app\job\model\Job();
+            return $Job->getJob($id);
+        }
+        return config('PARAMS_ERROR');
+    }
 }

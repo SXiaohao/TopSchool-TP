@@ -115,6 +115,13 @@ class Job extends Model
 
     }
 
+    /**
+     * 兼职列表
+     * @param $page
+     * @param $type
+     * @param $id
+     * @return array
+     */
     public function getJobList($page, $type, $id)
     {
         $county = Db::table('ym_school')
@@ -180,9 +187,25 @@ class Job extends Model
         } catch (ModelNotFoundException $e) {
         } catch (DbException $e) {
         }
-        return ['status' => 400, 'msg' => '查询失败！！', var_dump($this->getLastSql())];
+        return ['status' => 400, 'msg' => '查询失败！！'];
 
     }
 
+    /**
+     * @param $id
+     * @return array
+     */
+    public function getJob($id){
+        try {
+            $job=Db::table('ym_job')
+                ->where('id', $id)
+                ->select();
+            return ['status' => 200, 'msg' => '查询成功！！','job'=>$job];
+        } catch (DataNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
+        } catch (DbException $e) {
+        }
+        return ['status' => 400, 'msg' => '查询失败！！',$this->getLastSql()];
+    }
 
 }

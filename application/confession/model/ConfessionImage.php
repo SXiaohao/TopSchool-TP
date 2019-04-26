@@ -36,9 +36,6 @@ class ConfessionImage extends Model
         if (!checkToken($token, $phone)) {
             return config('NOT_SUPPORTED');
         }
-        if (Cache::get($phone) == $token) {
-            return ['status' => 201, 'msg' => '30分钟内只能发布一条'];
-        }
         //通过手机号查询用户信息
         $User = Db::table('ym_user')->where('phone', $phone)->find();
 
@@ -59,7 +56,7 @@ class ConfessionImage extends Model
                         'msg' => $files->getError()];
                 }
             }
-            Cache::set($phone, $token, 3600);
+
             return ['status' => 200,
                 'msg' => '上传成功！'];
         } else {
@@ -71,7 +68,7 @@ class ConfessionImage extends Model
                 ->insert(['article_id' => $status]);
             //判断上传是否成功
             if ($status) {
-                Cache::set($phone, $token, 3600);
+
                 return ['status' => 200,
                     'msg' => '上传成功！！'];
             } else {
