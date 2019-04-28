@@ -56,7 +56,6 @@ class ConfessionImage extends Model
                         'msg' => $files->getError()];
                 }
             }
-
             return ['status' => 200,
                 'msg' => '上传成功！'];
         } else {

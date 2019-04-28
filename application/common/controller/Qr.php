@@ -17,7 +17,8 @@ class Qr extends Controller
      * @param int $pid
      * @return void [type]          [description]
      */
-    public function create($text = 'https://packagist.org/packages/endroid/qr-code?pid=1000', $is_save = true, $pid = 0)
+    public function create($text = 'https://packagist.org/packages/endroid/qr-code?pid=1000',
+                           $is_save = true, $pid = 1)
     {
         $qrCode = new QrCodeExt($text);
         $qrCode->setSize(300);
@@ -40,7 +41,7 @@ class Qr extends Controller
             // Save it to a file
             $qrCode->writeFile( '../public/static/qrcode/' . $pid . '.png');
         }
-        var_dump(1111111111);
+
         die($qrCode->writeString());
     }
 

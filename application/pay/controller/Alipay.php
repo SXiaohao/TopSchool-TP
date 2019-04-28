@@ -32,9 +32,8 @@ class Alipay extends Controller
             //获取订单号
             $order_id = $request->param('order_id');
             $remark = $request->param('remark');
-            $address=$request->param('address');
             $order = new Order();
-            return $order->Alipay($order_id, $remark,$address);
+            return $order->Alipay($order_id, $remark);
         }
         return config('PARAMS_ERROR');
     }

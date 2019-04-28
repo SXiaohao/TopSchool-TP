@@ -207,7 +207,7 @@ class Order extends Model
      * @throws ModelNotFoundException
      * @throws PDOException
      */
-    public function Alipay($order_id, $remark, $address)
+    public function Alipay($order_id, $remark)
     {
         //查询订单信息
         $order_info = Db::table('ym_order')->where(['order_id' => $order_id])->find();
@@ -222,10 +222,14 @@ class Order extends Model
 
         if ($array) {
             //更新order表订单备注
+            $address = Db::table('ym_user_address')
+                ->where('user_id', $order_info["buyer_id"])
+                ->select();
+
             Db::table('ym_order')
                 ->where('order_id', $order_id)
                 ->update(['remark' => $remark,
-                    'address' => $address]);
+                    'address' => $address[0]["city"] . $address[0]["address"]]);
 
             return ['alipay_sdk' => $array,
                 'status' => '200', 'msg' => '成功'];
@@ -248,7 +252,7 @@ class Order extends Model
      * @throws PDOException
      * @throws WxPayException
      */
-    public function Wepay($order_id, $remark, $address)
+    public function Wepay($order_id, $remark)
     {
         //查询订单信息
         $order_info = Db::table('ym_order')->where(['order_id' => $order_id])->find();
@@ -261,10 +265,14 @@ class Order extends Model
 
         if ($result) {
             //更新order表订单备注
+            $address = Db::table('ym_user_address')
+                ->where('user_id', $order_info["buyer_id"])
+                ->select();
+
             Db::table('ym_order')
                 ->where('order_id', $order_id)
                 ->update(['remark' => $remark,
-                    'address' => $address]);
+                    'address' => $address[0]["city"] . $address[0]["address"]]);
 
             return ['wepay_sdk' => $result,
                 'status' => '200', 'msg' => '成功'];
@@ -282,13 +290,16 @@ class Order extends Model
      * @param $type
      * @param $page
      * @return array
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
      */
     public function selectOrder($market_id, $phone, $token, $type, $page)
     {
-        /*if (!checkToken($token, $phone)) {
+        if (!checkToken($token, $phone)) {
             return config('NOT_SUPPORTED');
-        }*/
-        try {
+        }
+
             switch ($type) {
                 case "待付款":
                     return $this->selectOrderAndPage($market_id, $page, 0);
@@ -304,10 +315,6 @@ class Order extends Model
                     break;
             }
 
-        } catch (DataNotFoundException $e) {
-        } catch (ModelNotFoundException $e) {
-        } catch (DbException $e) {
-        }
         return ['status' => 200,
             'msg' => '查询失败！！'];
     }
@@ -328,9 +335,17 @@ class Order extends Model
             $orderItemList = Db::table('ym_order_item')
                 ->where('order_id', $order_id)
                 ->select();
+            $order=Db::table('ym_order')
+                ->where('order_id',$order_id)
+                ->select();
+            $market_name=Db::table('ym_market')
+                ->where('market_id',$order[0]["market_id"])
+                ->value('market_name');
+            $order[0]["market_name"]=$market_name;
+            $order[0]["item"]=$orderItemList;
             return ['status' => 200,
                 'msg' => '查询成功！！',
-                'orderItemList' => $orderItemList];
+                'order' => $order[0]];
         } catch (DataNotFoundException $e) {
         } catch (ModelNotFoundException $e) {
         } catch (DbException $e) {
@@ -339,6 +354,16 @@ class Order extends Model
             'msg' => '查询失败！！'];
     }
 
+    /**
+     * 订单列表
+     * @param $market_id
+     * @param $page
+     * @param $type
+     * @return array
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
+     */
     private function selectOrderAndPage($market_id, $page, $type)
     {
         $orderList = Db::table('ym_order')
@@ -359,40 +384,57 @@ class Order extends Model
             'totalPages' => $totalPages];
     }
 
+    /**
+     * 查询待处理订单
+     * @param $market_id
+     * @param $page
+     * @param $type
+     * @return array
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
+     */
     private function selectDispose($market_id, $page, $type)
     {
-            $orderList = Db::table('ym_order')
+        $orderList = Db::table('ym_order')
+            ->where('market_id', $market_id)
+            ->where('pay_status', 1)
+            ->where('dispose', $type)
+            ->order('create_time', 'DESC')
+            ->page($page, 10)
+            ->select();
+        $totalPages = ceil(Db::table('ym_order')
                 ->where('market_id', $market_id)
                 ->where('pay_status', 1)
                 ->where('dispose', $type)
-                ->order('create_time', 'DESC')
-                ->page($page, 10)
-                ->select();
-            $totalPages = ceil(Db::table('ym_order')
-                    ->where('market_id', $market_id)
-                    ->where('pay_status', 1)
-                    ->where('dispose', $type)
-                    ->count('*') / Order::COUNT_OF_PAGE);
-            return ['status' => 200,
-                'msg' => '查询成功！！',
-                'orderList' => $orderList,
-                'totalPages' => $totalPages];
+                ->count('*') / Order::COUNT_OF_PAGE);
+        return ['status' => 200,
+            'msg' => '查询成功！！',
+            'orderList' => $orderList,
+            'totalPages' => $totalPages];
 
     }
 
     /**
+     * 订单处理
+     * @param $phone
+     * @param $token
      * @param $order_id
-     * @throws DataNotFoundException
-     * @throws DbException
-     * @throws ModelNotFoundException
-     * @throws WxPayException
+     * @return mixed
      */
-    public function refund($order_id){
-        $orderInfo=Db::table('ym_order')->where('order_id',$order_id)->select();
-        if ($orderInfo['pay_type']==2){
-            //$result=wepayRefund($orderInfo['out_trade_no',$orderInfo['trade_no']);
-        }else{
-            //$result=alipayRefund();
+    public function dispose($phone, $token, $order_id)
+    {
+        if (!checkToken($token, $phone)) {
+            return config('NOT_SUPPORTED');
         }
+        try {
+            Db::table('ym_order')
+                ->where('order_id', $order_id)
+                ->update(['dispose'=>1]);
+            return ['status'=>200,'msg'=>'处理成功！'];
+        } catch (PDOException $e) {
+        } catch (Exception $e) {
+        }
+        return ['status'=>400,'msg'=>'处理失败！',$this->getLastSql()];
     }
 }

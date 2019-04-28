@@ -128,7 +128,7 @@ class Management extends Controller
     }
 
     /**
-     * 查询订单
+     * 查询订单详情
      * @param Request $request
      * @return array|mixed
      */
@@ -140,6 +140,23 @@ class Management extends Controller
             $token = $request->param('token');
             $order = new Order();
             return $order->selectOrderItem($order_id, $phone, $token);
+        }
+        return config('PARAMS_ERROR');
+    }
+
+    /**
+     * 处理订单
+     * @param Request $request
+     * @return mixed
+     */
+    public function orderDispose(Request $request)
+    {
+        if ($request->isPost()) {
+            $phone = $request->param('phone');
+            $token = $request->param('token');
+            $order_id = $request->param('order_id');
+            $order = new Order();
+            return $order->dispose($phone, $token, $order_id);
         }
         return config('PARAMS_ERROR');
     }
