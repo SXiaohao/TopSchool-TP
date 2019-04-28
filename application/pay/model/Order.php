@@ -300,20 +300,20 @@ class Order extends Model
             return config('NOT_SUPPORTED');
         }
 
-            switch ($type) {
-                case "待付款":
-                    return $this->selectOrderAndPage($market_id, $page, 0);
-                case "已付款":
-                    return $this->selectOrderAndPage($market_id, $page, 1);
-                case "已退款":
-                    return $this->selectOrderAndPage($market_id, $page, 2);
-                case "待处理":
-                    return $this->selectDispose($market_id, $page, 0);
-                case "已处理":
-                    return $this->selectDispose($market_id, $page, 1);
-                default:
-                    break;
-            }
+        switch ($type) {
+            case "待付款":
+                return $this->selectOrderAndPage($market_id, $page, 0);
+            case "已付款":
+                return $this->selectOrderAndPage($market_id, $page, 1);
+            case "已退款":
+                return $this->selectOrderAndPage($market_id, $page, 2);
+            case "待处理":
+                return $this->selectDispose($market_id, $page, 0);
+            case "已处理":
+                return $this->selectDispose($market_id, $page, 1);
+            default:
+                break;
+        }
 
         return ['status' => 200,
             'msg' => '查询失败！！'];
@@ -324,9 +324,10 @@ class Order extends Model
      * @param $order_id
      * @param $phone
      * @param $token
+     * @param $market_id
      * @return array
      */
-    public function selectOrderItem($order_id, $phone, $token)
+    public function selectOrderItem($order_id, $phone, $token, $market_id)
     {
         if (!checkToken($token, $phone)) {
             return config('NOT_SUPPORTED');
@@ -335,14 +336,18 @@ class Order extends Model
             $orderItemList = Db::table('ym_order_item')
                 ->where('order_id', $order_id)
                 ->select();
-            $order=Db::table('ym_order')
-                ->where('order_id',$order_id)
+            $order = Db::table('ym_order')
+                ->where('order_id', $order_id)
                 ->select();
-            $market_name=Db::table('ym_market')
-                ->where('market_id',$order[0]["market_id"])
+            if ($order[0]["market_id"] != $market_id) {
+                return ['status' => 400,
+                    'msg' => '参数错误！！'];
+            }
+            $market_name = Db::table('ym_market')
+                ->where('market_id', $order[0]["market_id"])
                 ->value('market_name');
-            $order[0]["market_name"]=$market_name;
-            $order[0]["item"]=$orderItemList;
+            $order[0]["market_name"] = $market_name;
+            $order[0]["item"] = $orderItemList;
             return ['status' => 200,
                 'msg' => '查询成功！！',
                 'order' => $order[0]];
@@ -350,7 +355,7 @@ class Order extends Model
         } catch (ModelNotFoundException $e) {
         } catch (DbException $e) {
         }
-        return ['status' => 200,
+        return ['status' => 400,
             'msg' => '查询失败！！'];
     }
 
@@ -430,11 +435,11 @@ class Order extends Model
         try {
             Db::table('ym_order')
                 ->where('order_id', $order_id)
-                ->update(['dispose'=>1]);
-            return ['status'=>200,'msg'=>'处理成功！'];
+                ->update(['dispose' => 1]);
+            return ['status' => 200, 'msg' => '处理成功！'];
         } catch (PDOException $e) {
         } catch (Exception $e) {
         }
-        return ['status'=>400,'msg'=>'处理失败！',$this->getLastSql()];
+        return ['status' => 400, 'msg' => '处理失败！', $this->getLastSql()];
     }
 }

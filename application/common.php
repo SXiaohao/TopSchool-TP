@@ -157,7 +157,7 @@ function array_to_object($arr)
    * $product_code    订单号
    * $notify_url      异步回调地址
    */
-function alipay($body, $total_amount, $out_trade_no, $notify_url,$first_product)
+function alipay($body, $total_amount, $out_trade_no, $notify_url, $first_product)
 {
     /**
      * 调用支付宝接口。
@@ -199,7 +199,8 @@ function alipay($body, $total_amount, $out_trade_no, $notify_url,$first_product)
  * @return bool
  * @throws Exception
  */
-function alipayRefund($out_trade_no, $refund_amount){
+function alipayRefund($out_trade_no, $refund_amount)
+{
     /**
      * 调用支付宝接口。
      */
@@ -219,17 +220,17 @@ function alipayRefund($out_trade_no, $refund_amount){
 //            "\"trade_no\":\"2017112821001004030523090753\"," .
         "\"out_trade_no\":\"$out_trade_no\"," .
         "\"refund_amount\":$refund_amount," .
-        "\"refund_reason\":\"正常退款\","  .
+        "\"refund_reason\":\"正常退款\"," .
         "\"operator_id\":\"OP001\"," .
         "\"store_id\":\"NJ_S_001\"," .
         "\"terminal_id\":\"NJ_T_001\"" .
         "  }");
 
-    $result = $aop->execute ( $request );
+    $result = $aop->execute($request);
     $responseNode = str_replace(".", "_", $request->getApiMethodName()) . "_response";
     $resultCode = $result->$responseNode->code;
 
-    if(!empty($resultCode)&&$resultCode == 10000){
+    if (!empty($resultCode) && $resultCode == 10000) {
         return true;
     } else {
         throw new Exception($result->$responseNode->sub_msg);
@@ -240,7 +241,7 @@ function alipayRefund($out_trade_no, $refund_amount){
  * 微信支付
  * @param $body //名称
  * @param $total_amount //价格
- * @param $out_trade_no  //订单号
+ * @param $out_trade_no //订单号
  * @return bool|false|string
  * @throws WxPayException
  */
@@ -281,7 +282,7 @@ function wepay($body, $total_amount, $out_trade_no)
  * @return bool|false|string
  * @throws WxPayException
  */
-function wepayRefund($out_trade_no,$trade_no,$real_price,$pay_amount)
+function wepayRefund($out_trade_no, $trade_no, $real_price, $pay_amount)
 {
     header('Access-Control-Allow-Origin: *');
     header('Content-type: text/plain');
@@ -292,17 +293,18 @@ function wepayRefund($out_trade_no,$trade_no,$real_price,$pay_amount)
     $merchid = WxPayConfig::MCHID;
 
     $input = new WxPayRefund();
-    $input->SetOut_trade_no($out_trade_no);			//自己的订单号
-    $input->SetTransaction_id($trade_no);  	//微信官方生成的订单流水号，在支付成功中有返回
-    $input->SetOut_refund_no(mt_rand(1000000,9999999));			//退款单号
-    $input->SetTotal_fee($real_price*100);			//订单标价金额，单位为分
-    $input->SetRefund_fee($pay_amount*100);			//退款总金额，订单总金额，单位为分，只能为整数
+    $input->SetOut_trade_no($out_trade_no);            //自己的订单号
+    $input->SetTransaction_id($trade_no);    //微信官方生成的订单流水号，在支付成功中有返回
+    $input->SetOut_refund_no(mt_rand(1000000, 9999999));            //退款单号
+    $input->SetTotal_fee($real_price * 100);            //订单标价金额，单位为分
+    $input->SetRefund_fee($pay_amount * 100);            //退款总金额，订单总金额，单位为分，只能为整数
     $input->SetOp_user_id($merchid);
 
-    $result = WxPayApi::refund($input);	//退款操作
+    $result = WxPayApi::refund($input);    //退款操作
 
     return $result;
 }
+
 /**
  * 把用户输入的文本转义（主要针对特殊符号和emoji表情）
  * @param $str
@@ -325,11 +327,36 @@ function userTextEncode($str)
  * @param $str
  * @return mixed
  */
- function userTextDecode($str)
+function userTextDecode($str)
 {
     $text = json_encode($str); //暴露出unicode
     $text = preg_replace_callback('/\\\\\\\\/i', function ($str) {
         return '\\';
     }, $text); //将两条斜杠变成一条，其他不动
     return json_decode($text);
+}
+
+/**
+ * 上传图片
+ * @param $file
+ * @param $model
+ * @param $type
+ * @return array
+ */
+function uploadImg($file, $model, $type)
+{
+
+    //上传图片并返回访问路径
+    $info = $file->validate(['ext', 'jpg,jpeg,png,gif'])->move('../public/static/' . $model . '/' . $type);
+    if ($info) {
+        $getSaveName = str_replace("\\", "/", $info->getSaveName());
+        $imagePath = config('local_path') . "/static/" . $model . "/" . $type . "/" . $getSaveName;
+    } else {
+        return ['status' => 400,
+            'msg' => $file->getError()];
+    }
+
+    return ['status' => 200,
+        'msg' => '上传成功！',
+        'imagePath' => $imagePath];
 }

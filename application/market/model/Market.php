@@ -11,6 +11,7 @@ use think\db\exception\DataNotFoundException;
 use think\db\exception\ModelNotFoundException;
 use think\Exception;
 use think\exception\DbException;
+use think\exception\PDOException;
 use think\Model;
 
 class Market extends Model
@@ -79,6 +80,7 @@ class Market extends Model
     }
 
     /**
+     * 获取超市列表
      * @param $page
      * @param $order
      * @param $type
@@ -188,4 +190,31 @@ class Market extends Model
         }
         return ['status' => 400, 'msg' => '查询失败！！'];
     }
+
+    /**
+     * 更新超市信息
+     * @param $request
+     * @return array
+     */
+    public function updateMarketInfo($request)
+    {
+        if (!checkToken($request->token, $request->phone)) {
+            return config('NOT_SUPPORTED');
+        }
+        try {
+            Db::table('ym_market')->where('market_id',$request->market_id)
+                ->update(['market_name' => $request->market_name,
+                    'billboard' => $request->billoard,
+                    'market_school' => $request->market_school,
+                    'dorm_tower' => $request->dorm_tower,
+                    'dorm_num' => $request->dorm_num,
+                    'notice' => $request->notice]);
+            return ['status'=>200,'msg'=>'更新成功！'];
+        } catch (PDOException $e) {
+        } catch (Exception $e) {
+        }
+        return ['status'=>400,'msg'=>'更新失败！',$this->getLastSql()];
+    }
+
+
 }

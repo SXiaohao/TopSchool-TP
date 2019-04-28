@@ -4,6 +4,7 @@
 namespace app\market\controller;
 
 
+use app\market\model\Market;
 use app\market\model\Productcates;
 use app\pay\model\Order;
 use think\Controller;
@@ -138,8 +139,9 @@ class Management extends Controller
             $order_id = $request->param('order_id');
             $phone = $request->param('phone');
             $token = $request->param('token');
+            $market_id = $request->param('market_id');
             $order = new Order();
-            return $order->selectOrderItem($order_id, $phone, $token);
+            return $order->selectOrderItem($order_id, $phone, $token, $market_id);
         }
         return config('PARAMS_ERROR');
     }
@@ -157,6 +159,34 @@ class Management extends Controller
             $order_id = $request->param('order_id');
             $order = new Order();
             return $order->dispose($phone, $token, $order_id);
+        }
+        return config('PARAMS_ERROR');
+    }
+
+    /**
+     * 修改店家信息
+     * @param Request $request
+     * @return array|mixed
+     */
+    public function marketUpdate(Request $request)
+    {
+        if ($request->isPost()) {
+            $market = new Market();
+            return $market->updateMarketInfo($request);
+        }
+        return config('PARAMS_ERROR');
+    }
+
+    /**
+     * 上传商家招牌
+     * @param Request $request
+     * @return array|mixed
+     */
+    public function uploadBillboard(Request $request)
+    {
+        if ($request->isPost()) {
+            $img = $request->file('img');
+            return uploadImg($img, 'market', 'billboard');
         }
         return config('PARAMS_ERROR');
     }
