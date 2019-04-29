@@ -164,6 +164,21 @@ class Management extends Controller
     }
 
     /**
+     * 查询超市
+     * @param Request $request
+     * @return array|mixed
+     */
+    public function market(Request $request)
+    {
+        if ($request->isPost()) {
+            $market_id = $request->param('market_id');
+            $market = new Market();
+            return $market->getMarketInfo($market_id);
+        }
+        return config('PARAMS_ERROR');
+    }
+
+    /**
      * 修改店家信息
      * @param Request $request
      * @return array|mixed

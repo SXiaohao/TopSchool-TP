@@ -4,20 +4,18 @@
 namespace app\message\controller;
 
 
+use app\message\model\UniPushUtils;
 use think\Controller;
+use think\Request;
 
 class Push extends Controller
 {
-    public function chat()
+    public function chat(Request $request)
     {
-        //初始化
-        $curl = curl_init();
-        //设置抓取的url
-        curl_setopt($curl, CURLOPT_URL, 'http://localhost/confession/card/index?page=1');
-        //执行命令
-        $data = curl_exec($curl);
-        //关闭URL请求
-        curl_close($curl);
-        return $data;
+        if ($request->isPost()){
+            $push=new UniPushUtils();
+            return $push->pushMessageToApp();
+        }
+        return config('PARAMS_ERROR');
     }
 }

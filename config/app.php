@@ -25,6 +25,13 @@ return [
         'signType' => 'RSA2',
         'transport' => 'http',
     ],
+    'uni_push'=>[
+        'APPKEY'=>'2mR6abYMQqAsw12VERBWa7',
+        'APPID'=>'gYTlW1Ps7y9BTyCZPzYqo1',
+        'MASTERSECRET'=>'uSJOusAS6y6J0kdPp9eFLA',
+        'HOST'=>'http://sdk.open.api.igexin.com/apiex.htm',
+        'PN'=>'ymkj_app'
+    ],
     'SUCCESS' => ['status' => 200, 'msg' => "成功"],
     'NOT_LOGIN' => ['status' => 400, 'msg' => "账号身份过期"],
     'SYS_ERROR' => ['status' => 401, 'msg' => "服务器异常,请稍后再试"],
@@ -33,7 +40,7 @@ return [
     'TOO_FREQUENT' => ['status' => 445, 'msg' => "太频繁的调用"],
     'UNKNOWN_ERROR' => ['status' => 499, 'msg' => "未知错误"],
     //local_path
-    'local_path' => 'http://123.151.1.236',
+    'local_path' => 'http://123.151.1.33',
     //token key
     'token_key' => 'top_school_no1',
     //salt

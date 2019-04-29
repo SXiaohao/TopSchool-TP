@@ -360,3 +360,4 @@ function uploadImg($file, $model, $type)
         'msg' => '上传成功！',
         'imagePath' => $imagePath];
 }
+

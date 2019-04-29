@@ -202,19 +202,38 @@ class Market extends Model
             return config('NOT_SUPPORTED');
         }
         try {
-            Db::table('ym_market')->where('market_id',$request->market_id)
+            Db::table('ym_market')->where('market_id', $request->market_id)
                 ->update(['market_name' => $request->market_name,
                     'billboard' => $request->billoard,
                     'market_school' => $request->market_school,
                     'dorm_tower' => $request->dorm_tower,
                     'dorm_num' => $request->dorm_num,
                     'notice' => $request->notice]);
-            return ['status'=>200,'msg'=>'更新成功！'];
+            return ['status' => 200, 'msg' => '更新成功！'];
         } catch (PDOException $e) {
         } catch (Exception $e) {
         }
-        return ['status'=>400,'msg'=>'更新失败！',$this->getLastSql()];
+        return ['status' => 400, 'msg' => '更新失败！', $this->getLastSql()];
     }
 
+    /**
+     * 查询超市信息
+     * @param $market_id
+     * @return array
+     */
+    public function getMarketInfo($market_id)
+    {
+        try {
+            $market_info = Db::table('ym_market')
+                ->where('market_id', $market_id)
+                ->select();
+            return ['status' => 200, 'msg' => '查询成功！',
+                'market_info' => $market_info[0]];
+        } catch (DataNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
+        } catch (DbException $e) {
+        }
+        return ['status' => 400, 'msg' => '查询失败！', $this->getLastSql()];
+    }
 
 }
