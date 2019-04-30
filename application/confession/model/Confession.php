@@ -221,6 +221,9 @@ class Confession extends Model
                 ->group('ym_confession.article_id')
                 ->limit(6)
                 ->select();
+            for ($i=0;$i<count($confessionList);$i++){
+                $confessionList[$i]["content"]=userTextDecode( $confessionList[$i]["content"]);
+            }
             return ['status' => 200, 'msg' => '查询成功！', 'confessionList' => $confessionList];
         } catch (DataNotFoundException $e) {
         } catch (ModelNotFoundException $e) {
