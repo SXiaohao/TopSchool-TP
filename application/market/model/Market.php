@@ -80,6 +80,23 @@ class Market extends Model
     }
 
     /**
+     * 获取是否营业
+     * @param $market_id
+     * @return array
+     */
+    public function getMarketStatusInfo($market_id)
+    {
+        $market_status = Db::table('ym_market')
+            ->where('market_id', $market_id)
+            ->value('market_status');
+        if ($market_status >= 0) {
+            return ['status' => 200, 'msg' => '查询成功！！',
+                'market_status' => $market_status];
+        }
+        return ['status' => 400, 'msg' => '查询失败！！'];
+    }
+
+    /**
      * 获取超市列表
      * @param $page
      * @param $order
@@ -97,11 +114,13 @@ class Market extends Model
         }
         if ($type == "全部") {
             $totalPages = ceil(Db::table('ym_market')
-                    ->where(['market_school' => $market_school, 'status' => 1])
+                    ->where(['market_school' => $market_school, 'status' => 1,
+                        'management_status' => 1])
                     ->count('*') / Market::COUNT_OF_PAGE);
         } else {
             $totalPages = ceil(Db::table('ym_market')
-                    ->where(['market_school' => $market_school, 'type' => $type, 'status' => 1 ])
+                    ->where(['market_school' => $market_school, 'type' => $type, 'status' => 1,
+                        'management_status' => 1])
                     ->count('*') / Market::COUNT_OF_PAGE);
         }
         try {
@@ -110,7 +129,8 @@ class Market extends Model
                     if ($type == "全部") {
                         $marketList = Db::table('ym_market')
                             ->field('*,star_level+reading_volume as num')
-                            ->where(['market_school' => $market_school, 'status' => 1 ])
+                            ->where(['market_school' => $market_school, 'status' => 1,
+                                'management_status' => 1])
                             ->order('num', 'DESC')
                             ->order('sale_volume', $sale_volume)
                             ->page($page, 10)
@@ -122,7 +142,8 @@ class Market extends Model
                     } else {
                         $marketList = Db::table('ym_market')
                             ->field('*,star_level+reading_volume as num')
-                            ->where(['market_school' => $market_school, 'type' => $type, 'status' => 1 ])
+                            ->where(['market_school' => $market_school, 'type' => $type, 'status' => 1,
+                                'management_status' => 1])
                             ->order('num', 'DESC')
                             ->order('sale_volume', $sale_volume)
                             ->page($page, 10)
@@ -136,7 +157,8 @@ class Market extends Model
                 case "星级":
                     if ($type == "全部") {
                         $marketList = Db::table('ym_market')
-                            ->where(['market_school' => $market_school, 'status' => 1 ])
+                            ->where(['market_school' => $market_school, 'status' => 1,
+                                'management_status' => 1])
                             ->order('star_level', 'DESC')
                             ->order('sale_volume', $sale_volume)
                             ->page($page, 10)
@@ -146,7 +168,8 @@ class Market extends Model
                         }
                     } else {
                         $marketList = Db::table('ym_market')
-                            ->where(['market_school' => $market_school, 'type' => $type, 'status' => 1 ])
+                            ->where(['market_school' => $market_school, 'type' => $type, 'status' => 1,
+                                'management_status' => 1])
                             ->order('star_level', 'DESC')
                             ->order('sale_volume', $sale_volume)
                             ->page($page, 10)
@@ -160,7 +183,8 @@ class Market extends Model
                 case "人气":
                     if ($type == "全部") {
                         $marketList = Db::table('ym_market')
-                            ->where(['market_school' => $market_school, 'status' => 1 ])
+                            ->where(['market_school' => $market_school, 'status' => 1,
+                                'management_status' => 1])
                             ->order('reading_volume', 'DESC')
                             ->order('sale_volume', $sale_volume)
                             ->page($page, 10)
@@ -170,7 +194,8 @@ class Market extends Model
                         }
                     } else {
                         $marketList = Db::table('ym_market')
-                            ->where(['market_school' => $market_school, 'type' => $type, 'status' => 1 ])
+                            ->where(['market_school' => $market_school, 'type' => $type, 'status' => 1,
+                                'management_status' => 1])
                             ->order('reading_volume', 'DESC')
                             ->order('sale_volume', $sale_volume)
                             ->page($page, 10)
@@ -205,7 +230,7 @@ class Market extends Model
             Db::table('ym_market')->where('market_id', $request->market_id)
                 ->update(['market_name' => $request->market_name,
                     'billboard' => $request->billboard,
-                    'market_status'=>$request->market_status,
+                    'market_status' => $request->market_status,
                     'notice' => $request->notice]);
             return ['status' => 200, 'msg' => '更新成功！'];
         } catch (PDOException $e) {
@@ -221,7 +246,7 @@ class Market extends Model
      * @param $token
      * @return array
      */
-    public function getMarketInfo($market_id,$phone,$token)
+    public function getMarketInfo($market_id, $phone, $token)
     {
         if (!checkToken($token, $phone)) {
             return config('NOT_SUPPORTED');

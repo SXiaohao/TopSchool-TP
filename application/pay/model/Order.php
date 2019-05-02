@@ -207,7 +207,7 @@ class Order extends Model
      * @throws ModelNotFoundException
      * @throws PDOException
      */
-    public function Alipay($order_id, $remark)
+    public function Alipay($order_id, $remark,$address)
     {
         //查询订单信息
         $order_info = Db::table('ym_order')->where(['order_id' => $order_id])->find();
@@ -221,15 +221,11 @@ class Order extends Model
         $array = alipay('源梦网络', $money, $out_trade_no, $url, $order_info["first_product"]);
 
         if ($array) {
-            //更新order表订单备注
-            $address = Db::table('ym_user_address')
-                ->where('user_id', $order_info["buyer_id"])
-                ->select();
 
             Db::table('ym_order')
                 ->where('order_id', $order_id)
                 ->update(['remark' => $remark,
-                    'address' => $address[0]["city"] . $address[0]["address"]]);
+                    'address' => $address]);
 
             return ['alipay_sdk' => $array,
                 'status' => '200', 'msg' => '成功'];
@@ -252,7 +248,7 @@ class Order extends Model
      * @throws PDOException
      * @throws WxPayException
      */
-    public function Wepay($order_id, $remark)
+    public function Wepay($order_id, $remark,$address)
     {
         //查询订单信息
         $order_info = Db::table('ym_order')->where(['order_id' => $order_id])->find();
@@ -265,14 +261,11 @@ class Order extends Model
 
         if ($result) {
             //更新order表订单备注
-            $address = Db::table('ym_user_address')
-                ->where('user_id', $order_info["buyer_id"])
-                ->select();
 
             Db::table('ym_order')
                 ->where('order_id', $order_id)
                 ->update(['remark' => $remark,
-                    'address' => $address[0]["city"] . $address[0]["address"]]);
+                    'address' => $address]);
 
             return ['wepay_sdk' => $result,
                 'status' => '200', 'msg' => '成功'];

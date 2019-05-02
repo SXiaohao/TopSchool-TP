@@ -44,10 +44,10 @@ class Index extends Controller
     {
         if ($request->isPost()) {
             $card_front = $request->file('card_front');
-            $card_back=$request->file('card_back');
-            $student_card=$request->file('student_card');
+            $card_back = $request->file('card_back');
+            $student_card = $request->file('student_card');
             $marketVerify = new MarketVerify();
-            return $marketVerify->getImgPath($card_front,$card_back,$student_card);
+            return $marketVerify->getImgPath($card_front, $card_back, $student_card);
         }
         return config('PARAMS_ERROR');
     }
@@ -82,6 +82,21 @@ class Index extends Controller
     }
 
     /**
+     * 获取是否为营业
+     * @param Request $request
+     * @return array|mixed
+     */
+    public function getMarketStatus(Request $request)
+    {
+        if ($request->isGet()) {
+            $Market = new Market();
+            $market_id = $request->param('market_id');
+            return $Market->getMarketStatusInfo($market_id);
+        }
+        return config('PARAMS_ERROR');
+    }
+
+    /**
      * 超市列表查询
      * @param Request $request
      * @return mixed
@@ -99,7 +114,6 @@ class Index extends Controller
         }
         return config('PARAMS_ERROR');
     }
-
 
 
 }
