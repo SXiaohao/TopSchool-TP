@@ -22,6 +22,14 @@ use think\Request;
 
 class Login extends Controller
 {
+    /**
+     * 登录
+     * @param Request $request
+     * @return array
+     * @throws DataNotFoundException
+     * @throws DbException
+     * @throws ModelNotFoundException
+     */
     public function login(Request $request)
     {
         $phone = $request->phone;

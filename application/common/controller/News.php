@@ -42,7 +42,8 @@ class News extends Controller
                     $contents[$i] = ['type' => 'text', 'content' => $array[$i]];
                 }
             }
-            return ['date' => date("Y-m-d H:i:s", $str["data"]["pub_time"]),
+            return ['status'=>200,'msg'=>'查询成功！',
+                'date' => date("Y-m-d H:i:s", $str["data"]["pub_time"]),
                 'authorName' => $str["data"]["headpic"],
                 'title' => $str["data"]["title"],
                 'contents' => $contents];

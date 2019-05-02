@@ -168,12 +168,14 @@ class Management extends Controller
      * @param Request $request
      * @return array|mixed
      */
-    public function market(Request $request)
+    public function marketInfo(Request $request)
     {
         if ($request->isPost()) {
             $market_id = $request->param('market_id');
+            $phone = $request->param('phone');
+            $token = $request->param('token');
             $market = new Market();
-            return $market->getMarketInfo($market_id);
+            return $market->getMarketInfo($market_id, $phone, $token);
         }
         return config('PARAMS_ERROR');
     }

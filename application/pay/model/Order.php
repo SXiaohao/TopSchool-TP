@@ -435,7 +435,8 @@ class Order extends Model
         try {
             Db::table('ym_order')
                 ->where('order_id', $order_id)
-                ->update(['dispose' => 1]);
+                ->update(['dispose' => 1,
+                    'dispose_time'=>date('Y-m-d H:i:s', time())]);
             return ['status' => 200, 'msg' => '处理成功！'];
         } catch (PDOException $e) {
         } catch (Exception $e) {
